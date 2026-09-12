@@ -184,8 +184,6 @@
     gap:8px;
   }
   .promo-tag{
-    background:var(--cream-2);
-    color:var(--plum);
     font-weight:600;
     font-size:13.5px;
     padding:6px 14px;
@@ -282,11 +280,6 @@
     -webkit-box-orient:vertical;
   }
   .card.dragging{ opacity:0.4; }
-
-  .type-reel{ background:var(--coral); color:var(--coral-ink); }
-  .type-story{ background:var(--gold); color:var(--gold-ink); }
-  .type-reelstory{ background:var(--plum); color:var(--plum-ink); }
-  .type-other{ background:var(--clay); color:var(--clay-ink); }
 
   footer.hint{
     text-align:center;
@@ -640,6 +633,7 @@
       id: idx + 1,
       date: parseSheetDate(row.date),
       type: classifyType(row.task),
+      program: program,
       title: title,
       link: row.link ? row.link.trim() : null,
       text: row.text ? row.text.trim() : null,
@@ -716,11 +710,31 @@
   }
 
   const TYPE_META = {
-    reel:      { label:'REEL',        cls:'type-reel' },
-    story:     { label:'STORY',       cls:'type-story' },
-    reelstory: { label:'REEL + STORY',cls:'type-reelstory' },
-    other:     { label:'תוכן',        cls:'type-other' }
+    reel:      { label:'REEL' },
+    story:     { label:'STORY' },
+    reelstory: { label:'REEL + STORY' },
+    other:     { label:'תוכן' }
   };
+
+  /* ---------- צבע לפי תוכנית ----------
+     הצבע הראשי של כרטיס נקבע לפי עמודת "שם התוכנית" בגיליון (program).
+     סוג התוכן (REEL/STORY) קובע רק את עוצמת הגוון בתוך אותה משפחת צבע.
+     תוכנית שלא מזוהה ברשימה מקבלת צבע ניטרלי — לא מנחשים שיוך. */
+  const PROGRAM_COLORS = {
+    'סדנת האגן האורגזמי':   { reel:{bg:'#8C3B54', ink:'#FFF3F5'}, story:{bg:'#F3DCE3', ink:'#5C2438'} },
+    'קרמים':                { reel:{bg:'#D65C82', ink:'#FFF3F6'}, story:{bg:'#F8DCE6', ink:'#7A2E48'} },
+    'השקת תוכנית אור־גזמית': { reel:{bg:'#D0575C', ink:'#FFF7F3'}, story:{bg:'#FAE0DE', ink:'#7A2E22'} },
+    'צעצועי מין':           { reel:{bg:'#C1652E', ink:'#FFF6EE'}, story:{bg:'#F5E1CC', ink:'#6B3714'} },
+    'מכשיר לרצפת אגן':      { reel:{bg:'#E8C020', ink:'#5C3D0A'}, story:{bg:'#FBEFC7', ink:'#6B4A0A'} },
+    'אורגני':               { reel:{bg:'#708250', ink:'#FBF9EE'}, story:{bg:'#E3E8D6', ink:'#3E4A2A'} }
+  };
+  const NEUTRAL_COLOR = { bg:'#E4DCD0', ink:'#4A4038' };
+
+  function getCardColor(item){
+    const family = PROGRAM_COLORS[item.program];
+    if(!family) return NEUTRAL_COLOR;
+    return item.type === 'story' ? family.story : family.reel;
+  }
 
   const MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
@@ -747,7 +761,10 @@
 
   function buildCardEl(item){
     const el = document.createElement('div');
-    el.className = 'card ' + TYPE_META[item.type].cls;
+    el.className = 'card';
+    const color = getCardColor(item);
+    el.style.background = color.bg;
+    el.style.color = color.ink;
     el.draggable = true;
     el.dataset.id = item.id;
     el.innerHTML = '<span class="tag">'+TYPE_META[item.type].label+'</span><span class="name">'+item.title+'</span>';
@@ -775,7 +792,8 @@
 
   function openModal(item){
     const meta = TYPE_META[item.type];
-    let html = '<span class="modal-tag ' + meta.cls + '">' + meta.label + '</span>';
+    const color = getCardColor(item);
+    let html = '<span class="modal-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + meta.label + '</span>';
     html += '<h3 class="modal-title">' + escapeHtml(item.title) + '</h3>';
 
     if(item.text){
@@ -855,7 +873,8 @@
       html += '<div class="today-list">';
       items.forEach(item=>{
         const meta = TYPE_META[item.type];
-        html += '<button type="button" class="today-item ' + meta.cls + '" data-id="' + item.id + '">' +
+        const color = getCardColor(item);
+        html += '<button type="button" class="today-item" data-id="' + item.id + '" style="background:' + color.bg + ';color:' + color.ink + '">' +
                   '<span class="tag">' + meta.label + '</span>' +
                   '<span class="name">' + escapeHtml(item.title) + '</span>' +
                 '</button>';
@@ -938,7 +957,11 @@
       return;
     }
 
-    tagsEl.innerHTML = matches.map(p => '<span class="promo-tag">' + escapeHtml(p.program) + '</span>').join('');
+    tagsEl.innerHTML = matches.map(p => {
+      const family = PROGRAM_COLORS[p.program];
+      const color = family ? family.reel : NEUTRAL_COLOR;
+      return '<span class="promo-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + escapeHtml(p.program) + '</span>';
+    }).join('');
     box.hidden = false;
   }
 
