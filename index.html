@@ -288,6 +288,44 @@
     margin-top:28px;
   }
 
+  .notes-box{
+    background:#fff;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:20px 22px;
+    margin-top:22px;
+  }
+  .notes-box[hidden]{ display:none; }
+  .notes-title{
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:19px;
+    color:var(--plum);
+    margin:0 0 14px;
+  }
+  .notes-section{ margin-bottom:16px; }
+  .notes-section:last-child{ margin-bottom:0; }
+  .notes-section[hidden]{ display:none; }
+  .notes-section h3{
+    font-family:'Rubik',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink);
+    margin:0 0 8px;
+  }
+  .notes-section ul{
+    margin:0;
+    padding-inline-start:0;
+    padding-inline-end:20px;
+    list-style:disc;
+  }
+  .notes-section li{
+    font-size:14.5px;
+    line-height:1.7;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+
   /* ---------- content modal ---------- */
   .modal-backdrop{
     position:fixed;
@@ -503,6 +541,7 @@
     .page{ padding:14px 12px 36px; }
 
     .promo-box{ flex-direction:column; align-items:flex-start; padding:12px 14px; }
+    .notes-box{ padding:16px 16px; margin-top:16px; }
 
     .hero{ height:180px; border-radius:16px; }
     .hero-text{ padding:14px 16px 16px; }
@@ -579,6 +618,18 @@
   </div>
 
   <footer class="hint">גררו כרטיס בין ימים כדי לשנות תאריך פרסום, ולחצו על כרטיס כדי לראות פרטים</footer>
+
+  <div class="notes-box" id="notesBox" hidden>
+    <h2 class="notes-title">הערות ללנה</h2>
+    <div class="notes-section" id="notesReelSection" hidden>
+      <h3>🎬 הכנת ריל</h3>
+      <ul id="notesReelList"></ul>
+    </div>
+    <div class="notes-section" id="notesStorySection" hidden>
+      <h3>📱 הכנת סטורי</h3>
+      <ul id="notesStoryList"></ul>
+    </div>
+  </div>
 </div>
 
 <div class="modal-backdrop" id="modalBackdrop" hidden>
@@ -599,6 +650,7 @@
 
   let CONTENT = [];
   let MONTHLY_PLAN = [];
+  let NOTES_FOR_LENA = [];
 
   function parseSheetDate(dateStr){
     if(!dateStr) return null;
@@ -664,7 +716,11 @@
     }catch(err){
       throw new Error('התקבלה תשובה לא תקינה מהגיליון');
     }
-    return { rows: data.rows || [], monthlyPlan: data.monthlyPlan || [] };
+    return {
+      rows: data.rows || [],
+      monthlyPlan: data.monthlyPlan || [],
+      notesForLena: data.notesForLena || []
+    };
   }
 
   function mapRowsToContent(rows){
@@ -679,10 +735,17 @@
     })).filter(p => p.program && p.monthIndex !== undefined && !isNaN(p.year));
   }
 
+  function mapNotesForLenaRows(rows){
+    return rows.map(r=>({
+      type: (r.type || '').trim(),
+      note: (r.note || '').trim()
+    })).filter(n => n.type && n.note);
+  }
+
   /* ---------- מטמון מקומי (localStorage) ----------
-     שומר את הנתונים הגולמיים שהתקבלו בפעם האחרונה מהגיליון (כל הפרסומים +
-     תכנון חודשי), כדי שבפתיחה הבאה של הדשבורד יהיה מיד מה להציג, גם לפני
-     שהתשובה החיה מגיעה. */
+     שומר את הנתונים הגולמיים שהתקבלו בפעם האחרונה מהגיליון (כל הפרסומים,
+     תכנון חודשי, הערות ללנה), כדי שבפתיחה הבאה של הדשבורד יהיה מיד מה
+     להציג, גם לפני שהתשובה החיה מגיעה. */
   const CACHE_KEY = 'lenaDashboardCache_v1';
 
   function loadCachedData(){
@@ -691,15 +754,24 @@
       if(!raw) return null;
       const parsed = JSON.parse(raw);
       if(!parsed || !Array.isArray(parsed.rows)) return null;
-      return { rows: parsed.rows, monthlyPlan: parsed.monthlyPlan || [] };
+      return {
+        rows: parsed.rows,
+        monthlyPlan: parsed.monthlyPlan || [],
+        notesForLena: parsed.notesForLena || []
+      };
     }catch(err){
       return null;
     }
   }
 
-  function saveCachedData(rows, monthlyPlan){
+  function saveCachedData(rows, monthlyPlan, notesForLena){
     try{
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ rows: rows, monthlyPlan: monthlyPlan, savedAt: Date.now() }));
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        rows: rows,
+        monthlyPlan: monthlyPlan,
+        notesForLena: notesForLena,
+        savedAt: Date.now()
+      }));
     }catch(err){
       // localStorage לא זמין (מצב פרטי / מלא) — לא קריטי, פשוט נמשיך בלי מטמון
     }
@@ -726,7 +798,8 @@
     'השקת תוכנית אור־גזמית': { reel:{bg:'#D0575C', ink:'#FFF7F3'}, story:{bg:'#FAE0DE', ink:'#7A2E22'} },
     'צעצועי מין':           { reel:{bg:'#C1652E', ink:'#FFF6EE'}, story:{bg:'#F5E1CC', ink:'#6B3714'} },
     'מכשיר לרצפת אגן':      { reel:{bg:'#E8C020', ink:'#5C3D0A'}, story:{bg:'#FBEFC7', ink:'#6B4A0A'} },
-    'אורגני':               { reel:{bg:'#708250', ink:'#FBF9EE'}, story:{bg:'#E3E8D6', ink:'#3E4A2A'} }
+    'אורגני':               { reel:{bg:'#708250', ink:'#FBF9EE'}, story:{bg:'#E3E8D6', ink:'#3E4A2A'} },
+    'הכשרת מנחים LAVO':     { reel:{bg:'#3E7873', ink:'#FBF9EE'}, story:{bg:'#D9E6E3', ink:'#234943'} }
   };
   const NEUTRAL_COLOR = { bg:'#E4DCD0', ink:'#4A4038' };
 
@@ -965,9 +1038,28 @@
     box.hidden = false;
   }
 
+  function renderNotesForLena(){
+    const box = document.getElementById('notesBox');
+    const reelSection = document.getElementById('notesReelSection');
+    const storySection = document.getElementById('notesStorySection');
+    const reelList = document.getElementById('notesReelList');
+    const storyList = document.getElementById('notesStoryList');
+
+    const reelNotes = NOTES_FOR_LENA.filter(n => n.type === 'הכנת ריל');
+    const storyNotes = NOTES_FOR_LENA.filter(n => n.type === 'הכנת סטורי');
+
+    reelList.innerHTML = reelNotes.map(n => '<li>' + escapeHtml(n.note) + '</li>').join('');
+    storyList.innerHTML = storyNotes.map(n => '<li>' + escapeHtml(n.note) + '</li>').join('');
+
+    reelSection.hidden = reelNotes.length === 0;
+    storySection.hidden = storyNotes.length === 0;
+    box.hidden = reelNotes.length === 0 && storyNotes.length === 0;
+  }
+
   function renderAll(){
     renderCalendar();
     renderMonthlyPromo();
+    renderNotesForLena();
   }
 
   document.getElementById('prevBtn').addEventListener('click', ()=>{
@@ -997,6 +1089,7 @@
     if(hasCache){
       CONTENT = mapRowsToContent(cached.rows);
       MONTHLY_PLAN = mapMonthlyPlanRows(cached.monthlyPlan);
+      NOTES_FOR_LENA = mapNotesForLenaRows(cached.notesForLena);
       renderAll();
     } else {
       grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--ink-soft);padding:40px 0;">טוענת נתונים מהגיליון…</p>';
@@ -1006,7 +1099,8 @@
       const fresh = await fetchSheetData();
       CONTENT = mapRowsToContent(fresh.rows);
       MONTHLY_PLAN = mapMonthlyPlanRows(fresh.monthlyPlan);
-      saveCachedData(fresh.rows, fresh.monthlyPlan);
+      NOTES_FOR_LENA = mapNotesForLenaRows(fresh.notesForLena);
+      saveCachedData(fresh.rows, fresh.monthlyPlan, fresh.notesForLena);
       renderAll();
       setStaleNoticeVisible(false);
     }catch(err){
