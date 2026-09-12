@@ -188,7 +188,12 @@
     font-size:13.5px;
     padding:6px 14px;
     border-radius:999px;
+    border:none;
+    cursor:pointer;
+    font-family:'Heebo',sans-serif;
+    transition:filter .12s ease, transform .12s ease;
   }
+  .promo-tag:hover{ filter:brightness(1.05); transform:translateY(-1px); }
 
   /* ---------- calendar grid ---------- */
   .cal-card{
@@ -966,6 +971,52 @@
     });
   }
 
+  function formatShortDate(iso){
+    const parts = iso.split('-');
+    return parseInt(parts[2],10) + '.' + parseInt(parts[1],10);
+  }
+
+  function openCategoryModal(program){
+    const family = PROGRAM_COLORS[program];
+    const color = family ? family.reel : NEUTRAL_COLOR;
+
+    const items = CONTENT
+      .filter(c => c.program === program && c.date)
+      .filter(c=>{
+        const parts = c.date.split('-');
+        return parseInt(parts[0],10) === viewYear && (parseInt(parts[1],10) - 1) === viewMonth;
+      })
+      .sort((a,b)=> a.date < b.date ? -1 : (a.date > b.date ? 1 : 0));
+
+    let html = '<span class="modal-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + escapeHtml(program) + '</span>';
+    html += '<h3 class="modal-title">' + escapeHtml(program) + '</h3>';
+
+    if(items.length === 0){
+      html += '<p class="today-empty">אין תכנים בקטגוריה הזו בחודש הזה</p>';
+    } else {
+      html += '<div class="today-list">';
+      items.forEach(item=>{
+        const meta = TYPE_META[item.type];
+        const c = getCardColor(item);
+        html += '<button type="button" class="today-item" data-id="' + item.id + '" style="background:' + c.bg + ';color:' + c.ink + '">' +
+                  '<span class="tag">' + formatShortDate(item.date) + ' · ' + meta.label + '</span>' +
+                  '<span class="name">' + escapeHtml(item.title) + '</span>' +
+                '</button>';
+      });
+      html += '</div>';
+    }
+
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modalBackdrop').hidden = false;
+
+    document.querySelectorAll('.today-item').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const item = CONTENT.find(c => c.id === Number(btn.dataset.id));
+        if(item) openModal(item);
+      });
+    });
+  }
+
   document.getElementById('modalClose').addEventListener('click', closeModal);
   document.getElementById('modalBackdrop').addEventListener('click', e=>{
     if(e.target.id === 'modalBackdrop') closeModal();
@@ -1033,9 +1084,13 @@
     tagsEl.innerHTML = matches.map(p => {
       const family = PROGRAM_COLORS[p.program];
       const color = family ? family.reel : NEUTRAL_COLOR;
-      return '<span class="promo-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + escapeHtml(p.program) + '</span>';
+      return '<button type="button" class="promo-tag" data-program="' + escapeHtml(p.program) + '" style="background:' + color.bg + ';color:' + color.ink + '">' + escapeHtml(p.program) + '</button>';
     }).join('');
     box.hidden = false;
+
+    tagsEl.querySelectorAll('.promo-tag').forEach(btn=>{
+      btn.addEventListener('click', ()=> openCategoryModal(btn.dataset.program));
+    });
   }
 
   function renderNotesForLena(){
