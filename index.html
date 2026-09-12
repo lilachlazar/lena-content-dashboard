@@ -94,17 +94,11 @@
   /* ---------- layout ---------- */
   .board{
     display:flex;
-    gap:26px;
-    align-items:flex-start;
-    flex-wrap:wrap;
   }
   .calendar-col{
-    flex:1 1 600px;
+    flex:1 1 auto;
     min-width:0;
-  }
-  .side-col{
-    flex:0 0 260px;
-    width:260px;
+    width:100%;
   }
 
   /* ---------- calendar nav ---------- */
@@ -261,73 +255,6 @@
   .type-reelstory{ background:var(--plum); color:var(--plum-ink); }
   .type-other{ background:var(--clay); color:var(--clay-ink); }
 
-  /* ---------- side column ---------- */
-  .side-title{
-    font-family:'Rubik',sans-serif;
-    font-weight:800;
-    font-size:19px;
-    color:var(--plum);
-    margin:0 0 12px 2px;
-  }
-  .waiting-zone{
-    background:#fff;
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    padding:16px;
-    min-height:200px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    border:2px dashed transparent;
-    transition:border-color .12s ease, background .12s ease;
-  }
-  .waiting-zone.drag-over{
-    border-color:var(--coral);
-    background:#FDEDEC;
-  }
-  .waiting-empty{
-    margin:auto;
-    text-align:center;
-    color:var(--ink-soft);
-    font-size:14px;
-    line-height:1.6;
-    padding:20px 8px;
-  }
-  .waiting-card{
-    border-radius:14px;
-    padding:10px 12px;
-    cursor:grab;
-    box-shadow:var(--shadow-card);
-    line-height:1.3;
-  }
-  .waiting-card:active{ cursor:grabbing; }
-  .waiting-card .tag{
-    display:block;
-    font-family:'Rubik',sans-serif;
-    font-weight:800;
-    font-size:10.5px;
-    letter-spacing:0.6px;
-    opacity:0.9;
-    margin-bottom:3px;
-  }
-  .waiting-card .name{
-    display:block;
-    font-weight:600;
-    font-size:14.5px;
-    margin-bottom:6px;
-  }
-  .waiting-card a{
-    display:inline-block;
-    font-size:12.5px;
-    font-weight:700;
-    text-decoration:none;
-    color:inherit;
-    background:rgba(255,255,255,0.35);
-    padding:3px 9px;
-    border-radius:999px;
-  }
-  .waiting-card a:hover{ background:rgba(255,255,255,0.55); }
-
   footer.hint{
     text-align:center;
     color:var(--ink-soft);
@@ -455,6 +382,33 @@
     color:var(--ink);
     white-space:pre-wrap;
   }
+  .copy-text-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:10px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    color:var(--plum);
+    font-family:'Heebo',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    padding:9px 15px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .copy-text-btn:hover{ background:var(--cream-2); }
+  .copy-confirm{
+    display:inline-block;
+    margin-inline-start:10px;
+    font-size:13px;
+    font-weight:700;
+    color:#3F7A4E;
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  .copy-confirm.show{ opacity:1; }
   .modal-drive-btn{
     display:flex;
     align-items:center;
@@ -519,9 +473,6 @@
   }
   .modal-move-row button:hover{ filter:brightness(1.05); }
 
-  @media (max-width:900px){
-    .side-col{ flex:1 1 100%; width:100%; }
-  }
   @media (max-width:560px){
     .page{ padding:14px 12px 36px; }
 
@@ -542,6 +493,21 @@
     .modal{ padding:22px 18px 20px; }
     .modal-move-row{ flex-direction:column; }
     .modal-move-row button{ padding:12px 18px; width:100%; }
+
+    .copy-text-btn{
+      display:flex;
+      width:100%;
+      justify-content:center;
+      padding:12px 16px;
+      font-size:14.5px;
+      margin-top:12px;
+    }
+    .copy-confirm{
+      display:block;
+      margin-inline-start:0;
+      margin-top:8px;
+      text-align:center;
+    }
   }
 </style>
 </head>
@@ -553,7 +519,7 @@
     <div class="hero-overlay"></div>
     <div class="hero-text">
       <h1>לוח התוכן של לנה</h1>
-      <p>מה מתפרסם, מתי, ומה עוד מחכה לשיבוץ</p>
+      <p>מה מתפרסם ומתי</p>
     </div>
   </div>
 
@@ -576,11 +542,6 @@
           <div class="grid" id="grid"></div>
         </div>
       </div>
-    </div>
-
-    <div class="side-col">
-      <div class="side-title">מחכים לשיבוץ</div>
-      <div class="waiting-zone" id="waitingZone"></div>
     </div>
   </div>
 
@@ -753,24 +714,6 @@
     return el;
   }
 
-  function buildWaitingCardEl(item){
-    const el = document.createElement('div');
-    el.className = 'waiting-card ' + TYPE_META[item.type].cls;
-    el.draggable = true;
-    el.dataset.id = item.id;
-    let html = '<span class="tag">'+TYPE_META[item.type].label+'</span><span class="name">'+item.title+'</span>';
-    if(item.link){
-      html += '<a href="'+item.link+'" target="_blank" rel="noopener">🔗 לחומר</a>';
-    }
-    el.innerHTML = html;
-    el.addEventListener('dragstart', e=>{
-      e.dataTransfer.setData('text/plain', String(item.id));
-      el.classList.add('dragging');
-    });
-    el.addEventListener('dragend', ()=> el.classList.remove('dragging'));
-    return el;
-  }
-
   function escapeHtml(str){
     const d = document.createElement('div');
     d.textContent = str;
@@ -783,7 +726,10 @@
     html += '<h3 class="modal-title">' + escapeHtml(item.title) + '</h3>';
 
     if(item.text){
-      html += '<div class="modal-section"><h4>תוכן כתוב</h4><p>' + escapeHtml(item.text) + '</p></div>';
+      html += '<div class="modal-section"><h4>תוכן כתוב</h4><p>' + escapeHtml(item.text) + '</p>' +
+        '<button type="button" class="copy-text-btn" id="copyTextBtn">📋 העתקת המלל</button>' +
+        '<span class="copy-confirm" id="copyConfirm">✓ המלל הועתק</span>' +
+      '</div>';
     }
     if(item.notes){
       html += '<div class="modal-section"><h4>הערות</h4><p>' + escapeHtml(item.notes) + '</p></div>';
@@ -802,6 +748,28 @@
 
     document.getElementById('modalBody').innerHTML = html;
     document.getElementById('modalBackdrop').hidden = false;
+
+    const copyBtn = document.getElementById('copyTextBtn');
+    if(copyBtn){
+      copyBtn.addEventListener('click', async ()=>{
+        try{
+          await navigator.clipboard.writeText(item.text);
+        }catch(err){
+          const ta = document.createElement('textarea');
+          ta.value = item.text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        const confirmEl = document.getElementById('copyConfirm');
+        confirmEl.classList.add('show');
+        clearTimeout(copyBtn._hideTimer);
+        copyBtn._hideTimer = setTimeout(()=> confirmEl.classList.remove('show'), 1800);
+      });
+    }
 
     document.getElementById('moveDateBtn').addEventListener('click', ()=>{
       const val = document.getElementById('moveDateInput').value;
@@ -906,33 +874,8 @@
     }
   }
 
-  function renderWaiting(){
-    const zone = document.getElementById('waitingZone');
-    zone.innerHTML = '';
-    const unscheduled = CONTENT.filter(c => !c.date);
-
-    if(unscheduled.length === 0){
-      const empty = document.createElement('div');
-      empty.className = 'waiting-empty';
-      empty.textContent = 'הכל משובץ ללוח 🎉 כאן יופיע תוכן בלי תאריך.';
-      zone.appendChild(empty);
-    } else {
-      unscheduled.forEach(item => zone.appendChild(buildWaitingCardEl(item)));
-    }
-
-    zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', ()=> zone.classList.remove('drag-over'));
-    zone.addEventListener('drop', e=>{
-      e.preventDefault();
-      zone.classList.remove('drag-over');
-      const id = Number(e.dataTransfer.getData('text/plain'));
-      updateContentDate(id, null);
-    });
-  }
-
   function renderAll(){
     renderCalendar();
-    renderWaiting();
   }
 
   document.getElementById('prevBtn').addEventListener('click', ()=>{
