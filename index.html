@@ -159,6 +159,39 @@
   }
   .stale-notice[hidden]{ display:none; }
 
+  .promo-box{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    background:#fff;
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:12px 18px;
+    margin-bottom:16px;
+  }
+  .promo-box[hidden]{ display:none; }
+  .promo-label{
+    font-family:'Rubik',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    color:var(--plum);
+    flex:none;
+  }
+  .promo-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .promo-tag{
+    background:var(--cream-2);
+    color:var(--plum);
+    font-weight:600;
+    font-size:13.5px;
+    padding:6px 14px;
+    border-radius:999px;
+  }
+
   /* ---------- calendar grid ---------- */
   .cal-card{
     background:#fff;
@@ -476,6 +509,8 @@
   @media (max-width:560px){
     .page{ padding:14px 12px 36px; }
 
+    .promo-box{ flex-direction:column; align-items:flex-start; padding:12px 14px; }
+
     .hero{ height:180px; border-radius:16px; }
     .hero-text{ padding:14px 16px 16px; }
     .hero-text h1{ font-size:24px; margin:0 0 4px; }
@@ -532,6 +567,11 @@
         <button class="today-btn" id="todayBtn">היום</button>
       </div>
 
+      <div class="promo-box" id="promoBox" hidden>
+        <span class="promo-label">החודש אנחנו מקדמות:</span>
+        <div class="promo-tags" id="promoTags"></div>
+      </div>
+
       <div class="stale-notice" id="staleNotice" hidden>⏱ המידע לא התעדכן כרגע — מוצגים הנתונים האחרונים שנשמרו</div>
 
       <div class="cal-card">
@@ -565,6 +605,7 @@
   const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbybMKduEV_HTYZxcH7yx2WDvHmmRposr1bzasVpXks2wOKh9uEAb8ukTPDX2EwWQptSCg/exec';
 
   let CONTENT = [];
+  let MONTHLY_PLAN = [];
 
   function parseSheetDate(dateStr){
     if(!dateStr) return null;
@@ -608,7 +649,7 @@
 
   const FETCH_TIMEOUT_MS = 12000; // אם הגיליון לא עונה תוך 12 שניות, נפסיק לחכות ונציג הודעה
 
-  async function fetchSheetRows(){
+  async function fetchSheetData(){
     const controller = new AbortController();
     const timer = setTimeout(()=> controller.abort(), FETCH_TIMEOUT_MS);
     let res;
@@ -629,33 +670,42 @@
     }catch(err){
       throw new Error('התקבלה תשובה לא תקינה מהגיליון');
     }
-    return data.rows || [];
+    return { rows: data.rows || [], monthlyPlan: data.monthlyPlan || [] };
   }
 
   function mapRowsToContent(rows){
     return rows.map(rowToContentItem);
   }
 
+  function mapMonthlyPlanRows(rows){
+    return rows.map(r=>({
+      program: (r.program || '').trim(),
+      monthIndex: MONTH_INDEX[(r.month || '').trim()],
+      year: parseInt(r.year, 10)
+    })).filter(p => p.program && p.monthIndex !== undefined && !isNaN(p.year));
+  }
+
   /* ---------- מטמון מקומי (localStorage) ----------
-     שומר את השורות הגולמיות שהתקבלו בפעם האחרונה מהגיליון, כדי שבפתיחה
-     הבאה של הדשבורד יהיה מיד מה להציג, גם לפני שהתשובה החיה מגיעה. */
+     שומר את הנתונים הגולמיים שהתקבלו בפעם האחרונה מהגיליון (כל הפרסומים +
+     תכנון חודשי), כדי שבפתיחה הבאה של הדשבורד יהיה מיד מה להציג, גם לפני
+     שהתשובה החיה מגיעה. */
   const CACHE_KEY = 'lenaDashboardCache_v1';
 
-  function loadCachedRows(){
+  function loadCachedData(){
     try{
       const raw = localStorage.getItem(CACHE_KEY);
       if(!raw) return null;
       const parsed = JSON.parse(raw);
       if(!parsed || !Array.isArray(parsed.rows)) return null;
-      return parsed.rows;
+      return { rows: parsed.rows, monthlyPlan: parsed.monthlyPlan || [] };
     }catch(err){
       return null;
     }
   }
 
-  function saveCachedRows(rows){
+  function saveCachedData(rows, monthlyPlan){
     try{
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ rows: rows, savedAt: Date.now() }));
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ rows: rows, monthlyPlan: monthlyPlan, savedAt: Date.now() }));
     }catch(err){
       // localStorage לא זמין (מצב פרטי / מלא) — לא קריטי, פשוט נמשיך בלי מטמון
     }
@@ -673,6 +723,9 @@
   };
 
   const MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+  const MONTH_INDEX = {};
+  MONTHS_HE.forEach((m,i)=>{ MONTH_INDEX[m] = i; });
 
   const today = new Date();
   const todayStr = ymd(today);
@@ -874,8 +927,24 @@
     }
   }
 
+  function renderMonthlyPromo(){
+    const box = document.getElementById('promoBox');
+    const tagsEl = document.getElementById('promoTags');
+    const matches = MONTHLY_PLAN.filter(p => p.monthIndex === viewMonth && p.year === viewYear);
+
+    if(matches.length === 0){
+      box.hidden = true;
+      tagsEl.innerHTML = '';
+      return;
+    }
+
+    tagsEl.innerHTML = matches.map(p => '<span class="promo-tag">' + escapeHtml(p.program) + '</span>').join('');
+    box.hidden = false;
+  }
+
   function renderAll(){
     renderCalendar();
+    renderMonthlyPromo();
   }
 
   document.getElementById('prevBtn').addEventListener('click', ()=>{
@@ -899,20 +968,22 @@
     const grid = document.getElementById('grid');
     setStaleNoticeVisible(false);
 
-    const cachedRows = loadCachedRows();
-    const hasCache = !!(cachedRows && cachedRows.length);
+    const cached = loadCachedData();
+    const hasCache = !!(cached && cached.rows.length);
 
     if(hasCache){
-      CONTENT = mapRowsToContent(cachedRows);
+      CONTENT = mapRowsToContent(cached.rows);
+      MONTHLY_PLAN = mapMonthlyPlanRows(cached.monthlyPlan);
       renderAll();
     } else {
       grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--ink-soft);padding:40px 0;">טוענת נתונים מהגיליון…</p>';
     }
 
     try{
-      const freshRows = await fetchSheetRows();
-      CONTENT = mapRowsToContent(freshRows);
-      saveCachedRows(freshRows);
+      const fresh = await fetchSheetData();
+      CONTENT = mapRowsToContent(fresh.rows);
+      MONTHLY_PLAN = mapMonthlyPlanRows(fresh.monthlyPlan);
+      saveCachedData(fresh.rows, fresh.monthlyPlan);
       renderAll();
       setStaleNoticeVisible(false);
     }catch(err){
