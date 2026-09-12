@@ -172,9 +172,13 @@
     box-shadow:var(--shadow);
     padding:18px;
   }
+  .cal-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
   .weekdays{
     display:grid;
-    grid-template-columns:repeat(7,1fr);
+    grid-template-columns:repeat(7,minmax(80px,1fr));
     gap:8px;
     margin-bottom:8px;
   }
@@ -187,7 +191,7 @@
   }
   .grid{
     display:grid;
-    grid-template-columns:repeat(7,1fr);
+    grid-template-columns:repeat(7,minmax(80px,1fr));
     gap:8px;
   }
   .day{
@@ -427,15 +431,71 @@
   }
   .modal-drive-btn:hover{ filter:brightness(1.06); }
 
+  .modal-move{
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+  }
+  .modal-move h4{
+    font-family:'Rubik',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--plum);
+    margin:0 0 8px;
+  }
+  .modal-move-row{
+    display:flex;
+    gap:8px;
+  }
+  .modal-move-row input[type="date"]{
+    flex:1;
+    min-width:0;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:11px 12px;
+    font-family:'Heebo',sans-serif;
+    font-size:15px;
+    color:var(--ink);
+    background:var(--cream);
+  }
+  .modal-move-row button{
+    flex:none;
+    border:none;
+    border-radius:12px;
+    background:var(--gold);
+    color:var(--gold-ink);
+    font-family:'Heebo',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    padding:0 18px;
+    cursor:pointer;
+    transition:filter .15s ease;
+  }
+  .modal-move-row button:hover{ filter:brightness(1.05); }
+
   @media (max-width:900px){
     .side-col{ flex:1 1 100%; width:100%; }
   }
   @media (max-width:560px){
-    .page{ padding:18px 14px 40px; }
-    .day{ min-height:90px; }
+    .page{ padding:14px 12px 36px; }
+
+    .hero{ height:180px; border-radius:16px; }
+    .hero-text{ padding:14px 16px 16px; }
+    .hero-text h1{ font-size:24px; margin:0 0 4px; }
+    .hero-text p{ font-size:13.5px; }
+
+    .cal-nav{ gap:10px; margin-bottom:12px; }
+    .cal-nav .month-label{ font-size:19px; min-width:0; flex:1; }
+    .nav-btn{ width:46px; height:46px; font-size:22px; }
+    .today-btn{ padding:12px 18px; font-size:15px; }
+
     .cal-card{ padding:10px; }
-    .hero{ height:220px; border-radius:18px; }
-    .hero-text{ padding:18px 20px 20px; }
+    .day{ min-height:112px; padding:7px; }
+    .card{ padding:9px 10px; }
+
+    .modal{ padding:22px 18px 20px; }
+    .modal-move-row{ flex-direction:column; }
+    .modal-move-row button{ padding:12px 18px; width:100%; }
   }
 </style>
 </head>
@@ -463,10 +523,12 @@
       <div class="stale-notice" id="staleNotice" hidden>⏱ המידע לא התעדכן כרגע — מוצגים הנתונים האחרונים שנשמרו</div>
 
       <div class="cal-card">
-        <div class="weekdays">
-          <span>א׳</span><span>ב׳</span><span>ג׳</span><span>ד׳</span><span>ה׳</span><span>ו׳</span><span>ש׳</span>
+        <div class="cal-scroll">
+          <div class="weekdays">
+            <span>א׳</span><span>ב׳</span><span>ג׳</span><span>ד׳</span><span>ה׳</span><span>ו׳</span><span>ש׳</span>
+          </div>
+          <div class="grid" id="grid"></div>
         </div>
-        <div class="grid" id="grid"></div>
       </div>
     </div>
 
@@ -684,8 +746,26 @@
       html += '<a class="modal-drive-btn" href="' + item.link + '" target="_blank" rel="noopener">🔗 פתיחת החומר ב-Drive</a>';
     }
 
+    html += '<div class="modal-move">' +
+      '<h4>העברה לתאריך אחר</h4>' +
+      '<div class="modal-move-row">' +
+        '<input type="date" id="moveDateInput" value="' + (item.date || '') + '">' +
+        '<button type="button" id="moveDateBtn">העברה</button>' +
+      '</div>' +
+    '</div>';
+
     document.getElementById('modalBody').innerHTML = html;
     document.getElementById('modalBackdrop').hidden = false;
+
+    document.getElementById('moveDateBtn').addEventListener('click', ()=>{
+      const val = document.getElementById('moveDateInput').value;
+      if(!val) return;
+      const parts = val.split('-').map(Number);
+      viewYear = parts[0];
+      viewMonth = parts[1] - 1;
+      updateContentDate(item.id, val); // מעדכן רק את התצוגה; לא כותב ל-Google Sheets
+      closeModal();
+    });
   }
 
   function closeModal(){
