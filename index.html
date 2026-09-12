@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>לוח התוכן של לנה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --gold:#E8C020;
+    --gold-ink:#5C3D0A;
+    --coral:#D0575C;
+    --coral-ink:#FFF7F3;
+    --plum:#8C3B54;
+    --plum-ink:#FFF3F5;
+    --clay:#D8A55C;
+    --clay-ink:#3B2609;
+    --cream:#FBF7EE;
+    --cream-2:#F3ECDC;
+    --ink:#2E2A24;
+    --ink-soft:#7A7266;
+    --line:#EAE1CB;
+    --shadow: 0 4px 14px rgba(140,59,84,0.08);
+    --shadow-card: 0 3px 8px rgba(46,42,36,0.14);
+    --radius: 18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Heebo','Rubik',sans-serif;
+    direction:rtl;
+    min-height:100vh;
+  }
+
+  .page{
+    max-width:1400px;
+    margin:0 auto;
+    padding:28px 32px 60px;
+  }
+
+  /* ---------- header / hero ---------- */
+  .hero{
+    position:relative;
+    width:100%;
+    height:340px;
+    border-radius:24px;
+    overflow:hidden;
+    margin-bottom:30px;
+    box-shadow:var(--shadow);
+  }
+  .hero-img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:50% 15%;
+  }
+  .hero-overlay{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg,
+      rgba(140,59,84,0) 28%,
+      rgba(104,40,62,0.45) 62%,
+      rgba(74,26,45,0.8) 100%);
+  }
+  .hero-text{
+    position:absolute;
+    right:0;
+    left:0;
+    bottom:0;
+    padding:28px 34px 30px;
+  }
+  .hero-text h1{
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:clamp(28px,4vw,44px);
+    margin:0 0 8px;
+    color:#fff;
+    letter-spacing:0.2px;
+    text-shadow:0 2px 12px rgba(30,10,18,0.35);
+  }
+  .hero-text p{
+    margin:0;
+    color:#FCEFE6;
+    font-size:16.5px;
+    font-weight:500;
+    text-shadow:0 1px 8px rgba(30,10,18,0.35);
+  }
+
+  /* ---------- layout ---------- */
+  .board{
+    display:flex;
+    gap:26px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .calendar-col{
+    flex:1 1 600px;
+    min-width:0;
+  }
+  .side-col{
+    flex:0 0 260px;
+    width:260px;
+  }
+
+  /* ---------- calendar nav ---------- */
+  .cal-nav{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    margin-bottom:16px;
+  }
+  .cal-nav .month-label{
+    font-family:'Rubik',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    color:var(--ink);
+    min-width:180px;
+    text-align:center;
+  }
+  .nav-btn{
+    width:40px;height:40px;
+    border-radius:50%;
+    border:none;
+    background:#fff;
+    color:var(--plum);
+    font-size:20px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:var(--shadow-card);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .12s ease, background .15s ease;
+  }
+  .nav-btn:hover{ background:var(--gold); color:#fff; transform:translateY(-1px); }
+  .today-btn{
+    border:none;
+    background:var(--coral);
+    color:var(--coral-ink);
+    font-family:'Heebo',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    padding:9px 18px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:var(--shadow-card);
+    transition:filter .15s ease;
+  }
+  .today-btn:hover{ filter:brightness(1.06); }
+
+  .stale-notice{
+    width:fit-content;
+    max-width:100%;
+    margin:0 auto 14px;
+    text-align:center;
+    font-size:13px;
+    color:var(--ink-soft);
+    background:var(--cream-2);
+    border-radius:999px;
+    padding:6px 16px;
+  }
+  .stale-notice[hidden]{ display:none; }
+
+  /* ---------- calendar grid ---------- */
+  .cal-card{
+    background:#fff;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+  }
+  .weekdays{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .weekdays span{
+    text-align:center;
+    font-weight:700;
+    font-size:14px;
+    color:var(--plum);
+    padding:4px 0;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:8px;
+  }
+  .day{
+    background:var(--cream);
+    border-radius:14px;
+    padding:8px;
+    min-height:118px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    border:2px solid transparent;
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .day.outside{
+    background:transparent;
+    visibility:hidden;
+  }
+  .day.today{
+    border-color:var(--gold);
+    background:#FFFBEF;
+  }
+  .day.drag-over{
+    border-color:var(--coral);
+    background:#FDEDEC;
+  }
+  .day-num{
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:20px;
+    color:var(--ink);
+    padding:0 2px;
+  }
+  .day.today .day-num{ color:var(--coral); }
+
+  .card{
+    border-radius:12px;
+    padding:7px 9px;
+    cursor:grab;
+    box-shadow:var(--shadow-card);
+    line-height:1.25;
+    user-select:none;
+  }
+  .card:active{ cursor:grabbing; }
+  .card .tag{
+    display:block;
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:10.5px;
+    letter-spacing:0.6px;
+    opacity:0.9;
+    margin-bottom:2px;
+  }
+  .card .name{
+    display:block;
+    font-weight:600;
+    font-size:13.5px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+  .card.dragging{ opacity:0.4; }
+
+  .type-reel{ background:var(--coral); color:var(--coral-ink); }
+  .type-story{ background:var(--gold); color:var(--gold-ink); }
+  .type-reelstory{ background:var(--plum); color:var(--plum-ink); }
+  .type-other{ background:var(--clay); color:var(--clay-ink); }
+
+  /* ---------- side column ---------- */
+  .side-title{
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:19px;
+    color:var(--plum);
+    margin:0 0 12px 2px;
+  }
+  .waiting-zone{
+    background:#fff;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:16px;
+    min-height:200px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    border:2px dashed transparent;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .waiting-zone.drag-over{
+    border-color:var(--coral);
+    background:#FDEDEC;
+  }
+  .waiting-empty{
+    margin:auto;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+    line-height:1.6;
+    padding:20px 8px;
+  }
+  .waiting-card{
+    border-radius:14px;
+    padding:10px 12px;
+    cursor:grab;
+    box-shadow:var(--shadow-card);
+    line-height:1.3;
+  }
+  .waiting-card:active{ cursor:grabbing; }
+  .waiting-card .tag{
+    display:block;
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:10.5px;
+    letter-spacing:0.6px;
+    opacity:0.9;
+    margin-bottom:3px;
+  }
+  .waiting-card .name{
+    display:block;
+    font-weight:600;
+    font-size:14.5px;
+    margin-bottom:6px;
+  }
+  .waiting-card a{
+    display:inline-block;
+    font-size:12.5px;
+    font-weight:700;
+    text-decoration:none;
+    color:inherit;
+    background:rgba(255,255,255,0.35);
+    padding:3px 9px;
+    border-radius:999px;
+  }
+  .waiting-card a:hover{ background:rgba(255,255,255,0.55); }
+
+  footer.hint{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13px;
+    margin-top:28px;
+  }
+
+  /* ---------- content modal ---------- */
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(46,42,36,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:100;
+  }
+  .modal-backdrop[hidden]{ display:none; }
+  .modal{
+    position:relative;
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 16px 40px rgba(46,42,36,0.28);
+    width:100%;
+    max-width:440px;
+    max-height:min(600px,86vh);
+    overflow-y:auto;
+    padding:26px 26px 24px;
+  }
+  .modal-close{
+    position:absolute;
+    top:14px;
+    left:14px;
+    width:34px;height:34px;
+    border-radius:50%;
+    border:none;
+    background:var(--cream-2);
+    color:var(--ink);
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .12s ease, color .12s ease;
+  }
+  .modal-close:hover{ background:var(--coral); color:var(--coral-ink); }
+  .modal-tag{
+    display:inline-block;
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:11px;
+    letter-spacing:0.6px;
+    padding:5px 12px;
+    border-radius:999px;
+    margin-bottom:12px;
+  }
+  .modal-title{
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:22px;
+    color:var(--ink);
+    margin:0 0 16px;
+    padding-left:34px;
+    line-height:1.35;
+  }
+  .modal-section{ margin-bottom:18px; }
+  .modal-section:last-of-type{ margin-bottom:0; }
+  .modal-section h4{
+    font-family:'Rubik',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--plum);
+    margin:0 0 6px;
+  }
+  .modal-section p{
+    margin:0;
+    font-size:14.5px;
+    line-height:1.65;
+    color:var(--ink);
+    white-space:pre-wrap;
+  }
+  .modal-drive-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    margin-top:20px;
+    border:none;
+    border-radius:14px;
+    background:var(--coral);
+    color:var(--coral-ink);
+    font-family:'Heebo',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    padding:14px 16px;
+    cursor:pointer;
+    text-decoration:none;
+    box-shadow:var(--shadow-card);
+    transition:filter .15s ease;
+  }
+  .modal-drive-btn:hover{ filter:brightness(1.06); }
+
+  @media (max-width:900px){
+    .side-col{ flex:1 1 100%; width:100%; }
+  }
+  @media (max-width:560px){
+    .page{ padding:18px 14px 40px; }
+    .day{ min-height:90px; }
+    .cal-card{ padding:10px; }
+    .hero{ height:220px; border-radius:18px; }
+    .hero-text{ padding:18px 20px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="hero">
+    <img class="hero-img" src="assets/lena-header.png" alt="לנה ליילה">
+    <div class="hero-overlay"></div>
+    <div class="hero-text">
+      <h1>לוח התוכן של לנה</h1>
+      <p>מה מתפרסם, מתי, ומה עוד מחכה לשיבוץ</p>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="calendar-col">
+      <div class="cal-nav">
+        <button class="nav-btn" id="prevBtn" aria-label="חודש קודם">‹</button>
+        <div class="month-label" id="monthLabel">ספטמבר 2026</div>
+        <button class="nav-btn" id="nextBtn" aria-label="חודש הבא">›</button>
+        <button class="today-btn" id="todayBtn">היום</button>
+      </div>
+
+      <div class="stale-notice" id="staleNotice" hidden>⏱ המידע לא התעדכן כרגע — מוצגים הנתונים האחרונים שנשמרו</div>
+
+      <div class="cal-card">
+        <div class="weekdays">
+          <span>א׳</span><span>ב׳</span><span>ג׳</span><span>ד׳</span><span>ה׳</span><span>ו׳</span><span>ש׳</span>
+        </div>
+        <div class="grid" id="grid"></div>
+      </div>
+    </div>
+
+    <div class="side-col">
+      <div class="side-title">מחכים לשיבוץ</div>
+      <div class="waiting-zone" id="waitingZone"></div>
+    </div>
+  </div>
+
+  <footer class="hint">גררו כרטיס בין ימים כדי לשנות תאריך פרסום, ולחצו על כרטיס כדי לראות פרטים</footer>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modalPanel" role="dialog" aria-modal="true">
+    <button class="modal-close" id="modalClose" aria-label="סגירה">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   נתוני תוכן — נקראים חיים מגיליון "כל הפרסומים" בגוגל שיטס,
+   דרך Google Apps Script (Web App, קריאה בלבד).
+   שלב עתידי: לחבר את updateContentDate לכתיבה חזרה לתאריך בגיליון
+   (כרגע היא רק מעדכנת את המסך, ולא כותבת ל-Sheet).
+   ========================================================= */
+  const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbybMKduEV_HTYZxcH7yx2WDvHmmRposr1bzasVpXks2wOKh9uEAb8ukTPDX2EwWQptSCg/exec';
+
+  let CONTENT = [];
+
+  function parseSheetDate(dateStr){
+    if(!dateStr) return null;
+    const parts = String(dateStr).trim().split('.');
+    if(parts.length < 2) return null;
+    let day = parseInt(parts[0], 10);
+    let month = parseInt(parts[1], 10);
+    if(isNaN(day) || isNaN(month)) return null;
+    if(month > 12){
+      month = parseInt(String(parts[1])[0], 10); // מתקן טעויות הקלדה כמו "29.90"
+    }
+    if(isNaN(month) || month < 1 || month > 12) return null;
+    const year = today.getFullYear();
+    return year + '-' + String(month).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+  }
+
+  function classifyType(task){
+    task = task || '';
+    const hasReel = task.includes('ריל') || task.includes('רייל');
+    const hasStory = task.includes('סטור');
+    if(hasReel && hasStory) return 'reelstory';
+    if(hasReel) return 'reel';
+    if(hasStory) return 'story';
+    return 'other';
+  }
+
+  function rowToContentItem(row, idx){
+    const reelName = (row.reelName || '').trim();
+    const program = (row.program || '').trim();
+    const title = (reelName && reelName.length <= 25) ? reelName : (program || reelName || 'ללא שם');
+    return {
+      id: idx + 1,
+      date: parseSheetDate(row.date),
+      type: classifyType(row.task),
+      title: title,
+      link: row.link ? row.link.trim() : null,
+      text: row.text ? row.text.trim() : null,
+      notes: row.notes ? row.notes.trim() : null
+    };
+  }
+
+  const FETCH_TIMEOUT_MS = 12000; // אם הגיליון לא עונה תוך 12 שניות, נפסיק לחכות ונציג הודעה
+
+  async function fetchSheetRows(){
+    const controller = new AbortController();
+    const timer = setTimeout(()=> controller.abort(), FETCH_TIMEOUT_MS);
+    let res;
+    try{
+      res = await fetch(SHEET_API_URL, { signal: controller.signal, cache: 'no-store' });
+    }catch(err){
+      if(err.name === 'AbortError'){
+        throw new Error('תם הזמן להמתנה לתשובה מהגיליון (מעל ' + (FETCH_TIMEOUT_MS/1000) + ' שניות)');
+      }
+      throw err;
+    }finally{
+      clearTimeout(timer);
+    }
+    if(!res.ok) throw new Error('שגיאת רשת: ' + res.status);
+    let data;
+    try{
+      data = await res.json();
+    }catch(err){
+      throw new Error('התקבלה תשובה לא תקינה מהגיליון');
+    }
+    return data.rows || [];
+  }
+
+  function mapRowsToContent(rows){
+    return rows.map(rowToContentItem);
+  }
+
+  /* ---------- מטמון מקומי (localStorage) ----------
+     שומר את השורות הגולמיות שהתקבלו בפעם האחרונה מהגיליון, כדי שבפתיחה
+     הבאה של הדשבורד יהיה מיד מה להציג, גם לפני שהתשובה החיה מגיעה. */
+  const CACHE_KEY = 'lenaDashboardCache_v1';
+
+  function loadCachedRows(){
+    try{
+      const raw = localStorage.getItem(CACHE_KEY);
+      if(!raw) return null;
+      const parsed = JSON.parse(raw);
+      if(!parsed || !Array.isArray(parsed.rows)) return null;
+      return parsed.rows;
+    }catch(err){
+      return null;
+    }
+  }
+
+  function saveCachedRows(rows){
+    try{
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ rows: rows, savedAt: Date.now() }));
+    }catch(err){
+      // localStorage לא זמין (מצב פרטי / מלא) — לא קריטי, פשוט נמשיך בלי מטמון
+    }
+  }
+
+  function setStaleNoticeVisible(visible){
+    document.getElementById('staleNotice').hidden = !visible;
+  }
+
+  const TYPE_META = {
+    reel:      { label:'REEL',        cls:'type-reel' },
+    story:     { label:'STORY',       cls:'type-story' },
+    reelstory: { label:'REEL + STORY',cls:'type-reelstory' },
+    other:     { label:'תוכן',        cls:'type-other' }
+  };
+
+  const MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+  const today = new Date();
+  const todayStr = ymd(today);
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth(); // 0-indexed
+
+  function ymd(d){
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  function updateContentDate(id, newDate){
+    const item = CONTENT.find(c => c.id === id);
+    if(!item) return;
+    item.date = newDate; // newDate === null => "מחכים לשיבוץ"
+    // TODO (שלב הבא): לקרוא כאן לפונקציית כתיבה ל-Google Sheets
+    // שתעדכן את עמודת "תאריך" עבור השורה המתאימה בגיליון "כל הפרסומים".
+    renderAll();
+  }
+
+  function buildCardEl(item){
+    const el = document.createElement('div');
+    el.className = 'card ' + TYPE_META[item.type].cls;
+    el.draggable = true;
+    el.dataset.id = item.id;
+    el.innerHTML = '<span class="tag">'+TYPE_META[item.type].label+'</span><span class="name">'+item.title+'</span>';
+    el.addEventListener('dragstart', e=>{
+      e.dataTransfer.setData('text/plain', String(item.id));
+      el.classList.add('dragging');
+      el._wasDragged = true;
+    });
+    el.addEventListener('dragend', ()=>{
+      el.classList.remove('dragging');
+      setTimeout(()=>{ el._wasDragged = false; }, 0);
+    });
+    el.addEventListener('click', ()=>{
+      if(el._wasDragged) return;
+      openModal(item);
+    });
+    return el;
+  }
+
+  function buildWaitingCardEl(item){
+    const el = document.createElement('div');
+    el.className = 'waiting-card ' + TYPE_META[item.type].cls;
+    el.draggable = true;
+    el.dataset.id = item.id;
+    let html = '<span class="tag">'+TYPE_META[item.type].label+'</span><span class="name">'+item.title+'</span>';
+    if(item.link){
+      html += '<a href="'+item.link+'" target="_blank" rel="noopener">🔗 לחומר</a>';
+    }
+    el.innerHTML = html;
+    el.addEventListener('dragstart', e=>{
+      e.dataTransfer.setData('text/plain', String(item.id));
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', ()=> el.classList.remove('dragging'));
+    return el;
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function openModal(item){
+    const meta = TYPE_META[item.type];
+    let html = '<span class="modal-tag ' + meta.cls + '">' + meta.label + '</span>';
+    html += '<h3 class="modal-title">' + escapeHtml(item.title) + '</h3>';
+
+    if(item.text){
+      html += '<div class="modal-section"><h4>תוכן כתוב</h4><p>' + escapeHtml(item.text) + '</p></div>';
+    }
+    if(item.notes){
+      html += '<div class="modal-section"><h4>הערות</h4><p>' + escapeHtml(item.notes) + '</p></div>';
+    }
+    if(item.link){
+      html += '<a class="modal-drive-btn" href="' + item.link + '" target="_blank" rel="noopener">🔗 פתיחת החומר ב-Drive</a>';
+    }
+
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modalBackdrop').hidden = false;
+  }
+
+  function closeModal(){
+    document.getElementById('modalBackdrop').hidden = true;
+  }
+
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalBackdrop').addEventListener('click', e=>{
+    if(e.target.id === 'modalBackdrop') closeModal();
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape') closeModal();
+  });
+
+  function renderCalendar(){
+    document.getElementById('monthLabel').textContent = MONTHS_HE[viewMonth] + ' ' + viewYear;
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+
+    const firstWeekday = new Date(viewYear, viewMonth, 1).getDay(); // 0=Sunday
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    const totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+
+    for(let i=0; i<totalCells; i++){
+      const dayNum = i - firstWeekday + 1;
+      const cell = document.createElement('div');
+
+      if(dayNum < 1 || dayNum > daysInMonth){
+        cell.className = 'day outside';
+        grid.appendChild(cell);
+        continue;
+      }
+
+      const dateStr = viewYear+'-'+String(viewMonth+1).padStart(2,'0')+'-'+String(dayNum).padStart(2,'0');
+      cell.className = 'day' + (dateStr === todayStr ? ' today' : '');
+      cell.dataset.date = dateStr;
+
+      const num = document.createElement('div');
+      num.className = 'day-num';
+      num.textContent = dayNum;
+      cell.appendChild(num);
+
+      CONTENT.filter(c => c.date === dateStr).forEach(item=>{
+        cell.appendChild(buildCardEl(item));
+      });
+
+      cell.addEventListener('dragover', e=>{ e.preventDefault(); cell.classList.add('drag-over'); });
+      cell.addEventListener('dragleave', ()=> cell.classList.remove('drag-over'));
+      cell.addEventListener('drop', e=>{
+        e.preventDefault();
+        cell.classList.remove('drag-over');
+        const id = Number(e.dataTransfer.getData('text/plain'));
+        updateContentDate(id, dateStr);
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function renderWaiting(){
+    const zone = document.getElementById('waitingZone');
+    zone.innerHTML = '';
+    const unscheduled = CONTENT.filter(c => !c.date);
+
+    if(unscheduled.length === 0){
+      const empty = document.createElement('div');
+      empty.className = 'waiting-empty';
+      empty.textContent = 'הכל משובץ ללוח 🎉 כאן יופיע תוכן בלי תאריך.';
+      zone.appendChild(empty);
+    } else {
+      unscheduled.forEach(item => zone.appendChild(buildWaitingCardEl(item)));
+    }
+
+    zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', ()=> zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e=>{
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const id = Number(e.dataTransfer.getData('text/plain'));
+      updateContentDate(id, null);
+    });
+  }
+
+  function renderAll(){
+    renderCalendar();
+    renderWaiting();
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', ()=>{
+    viewMonth--;
+    if(viewMonth < 0){ viewMonth = 11; viewYear--; }
+    renderAll();
+  });
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    viewMonth++;
+    if(viewMonth > 11){ viewMonth = 0; viewYear++; }
+    renderAll();
+  });
+  document.getElementById('todayBtn').addEventListener('click', ()=>{
+    viewYear = today.getFullYear();
+    viewMonth = today.getMonth();
+    renderAll();
+  });
+
+  async function init(){
+    const grid = document.getElementById('grid');
+    setStaleNoticeVisible(false);
+
+    const cachedRows = loadCachedRows();
+    const hasCache = !!(cachedRows && cachedRows.length);
+
+    if(hasCache){
+      CONTENT = mapRowsToContent(cachedRows);
+      renderAll();
+    } else {
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--ink-soft);padding:40px 0;">טוענת נתונים מהגיליון…</p>';
+    }
+
+    try{
+      const freshRows = await fetchSheetRows();
+      CONTENT = mapRowsToContent(freshRows);
+      saveCachedRows(freshRows);
+      renderAll();
+      setStaleNoticeVisible(false);
+    }catch(err){
+      console.error(err);
+      if(hasCache){
+        // יש כבר מה להציג על המסך — משאירים אותו, רק מודיעים בעדינות שהוא לא עודכן.
+        setStaleNoticeVisible(true);
+      } else {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--ink-soft);padding:40px 0;">לא הצלחנו לטעון כרגע נתונים מהגיליון. רעננו את הדף ונסו שוב.</p>';
+      }
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
