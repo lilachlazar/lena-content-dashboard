@@ -384,6 +384,52 @@
     border-radius:999px;
     margin-bottom:12px;
   }
+  .modal-tag.today-badge{ background:var(--gold); color:var(--gold-ink); }
+
+  .today-empty{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:15px;
+    padding:22px 8px 6px;
+    margin:0;
+  }
+  .today-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:6px;
+  }
+  .today-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:13px 15px;
+    cursor:pointer;
+    text-align:right;
+    font-family:'Heebo',sans-serif;
+    box-shadow:var(--shadow-card);
+    transition:filter .12s ease, transform .12s ease;
+  }
+  .today-item:hover{ filter:brightness(1.05); transform:translateY(-1px); }
+  .today-item .tag{
+    flex:none;
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:10.5px;
+    letter-spacing:0.6px;
+    opacity:0.9;
+    background:rgba(255,255,255,0.35);
+    padding:4px 9px;
+    border-radius:999px;
+  }
+  .today-item .name{
+    flex:1;
+    font-weight:600;
+    font-size:15.5px;
+  }
   .modal-title{
     font-family:'Rubik',sans-serif;
     font-weight:800;
@@ -772,6 +818,41 @@
     document.getElementById('modalBackdrop').hidden = true;
   }
 
+  function formatHebrewDate(d){
+    return d.getDate() + ' ב' + MONTHS_HE[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  function openTodayModal(){
+    const items = CONTENT.filter(c => c.date === todayStr);
+
+    let html = '<span class="modal-tag today-badge">היום</span>';
+    html += '<h3 class="modal-title">' + escapeHtml(formatHebrewDate(today)) + '</h3>';
+
+    if(items.length === 0){
+      html += '<p class="today-empty">אין תוכן מתוכנן להיום</p>';
+    } else {
+      html += '<div class="today-list">';
+      items.forEach(item=>{
+        const meta = TYPE_META[item.type];
+        html += '<button type="button" class="today-item ' + meta.cls + '" data-id="' + item.id + '">' +
+                  '<span class="tag">' + meta.label + '</span>' +
+                  '<span class="name">' + escapeHtml(item.title) + '</span>' +
+                '</button>';
+      });
+      html += '</div>';
+    }
+
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modalBackdrop').hidden = false;
+
+    document.querySelectorAll('.today-item').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const item = CONTENT.find(c => c.id === Number(btn.dataset.id));
+        if(item) openModal(item); // אותו חלון פרטים שכבר קיים - מלל, הערות וקישור ל-Drive
+      });
+    });
+  }
+
   document.getElementById('modalClose').addEventListener('click', closeModal);
   document.getElementById('modalBackdrop').addEventListener('click', e=>{
     if(e.target.id === 'modalBackdrop') closeModal();
@@ -868,6 +949,7 @@
     viewYear = today.getFullYear();
     viewMonth = today.getMonth();
     renderAll();
+    openTodayModal();
   });
 
   async function init(){
