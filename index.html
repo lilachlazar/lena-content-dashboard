@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>לוח התוכן של לנה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700&display=swap">
@@ -149,13 +152,14 @@
   .stale-notice{
     width:fit-content;
     max-width:100%;
-    margin:0 auto 14px;
+    margin:0 auto 10px;
     text-align:center;
-    font-size:13px;
+    font-size:11px;
     color:var(--ink-soft);
-    background:var(--cream-2);
+    opacity:0.8;
+    background:transparent;
     border-radius:999px;
-    padding:6px 16px;
+    padding:2px 10px;
   }
   .stale-notice[hidden]{ display:none; }
 
@@ -286,13 +290,6 @@
   }
   .card.dragging{ opacity:0.4; }
 
-  footer.hint{
-    text-align:center;
-    color:var(--ink-soft);
-    font-size:13px;
-    margin-top:28px;
-  }
-
   .notes-box{
     background:#fff;
     border-radius:var(--radius);
@@ -330,6 +327,14 @@
     color:var(--ink);
     margin-bottom:4px;
   }
+  .notes-empty{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14.5px;
+    margin:0;
+    padding:6px 0;
+  }
+  .notes-empty[hidden]{ display:none; }
 
   /* ---------- content modal ---------- */
   .modal-backdrop{
@@ -388,6 +393,11 @@
     font-size:15px;
     padding:22px 8px 6px;
     margin:0;
+  }
+  .category-count{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    margin:-8px 0 14px;
   }
   .today-list{
     display:flex;
@@ -622,8 +632,6 @@
     </div>
   </div>
 
-  <footer class="hint">גררו כרטיס בין ימים כדי לשנות תאריך פרסום, ולחצו על כרטיס כדי לראות פרטים</footer>
-
   <div class="notes-box" id="notesBox" hidden>
     <h2 class="notes-title">הערות ללנה</h2>
     <div class="notes-section" id="notesReelSection" hidden>
@@ -634,6 +642,7 @@
       <h3>📱 הכנת סטורי</h3>
       <ul id="notesStoryList"></ul>
     </div>
+    <p class="notes-empty" id="notesEmpty" hidden>אין כרגע דברים להכנה</p>
   </div>
 </div>
 
@@ -989,11 +998,12 @@
       .sort((a,b)=> a.date < b.date ? -1 : (a.date > b.date ? 1 : 0));
 
     let html = '<span class="modal-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + escapeHtml(program) + '</span>';
-    html += '<h3 class="modal-title">' + escapeHtml(program) + '</h3>';
+    html += '<h3 class="modal-title">' + escapeHtml(program) + ' · ' + MONTHS_HE[viewMonth] + '</h3>';
 
     if(items.length === 0){
       html += '<p class="today-empty">אין תכנים בקטגוריה הזו בחודש הזה</p>';
     } else {
+      html += '<p class="category-count">' + items.length + ' תכנים מתוכננים</p>';
       html += '<div class="today-list">';
       items.forEach(item=>{
         const meta = TYPE_META[item.type];
@@ -1099,6 +1109,7 @@
     const storySection = document.getElementById('notesStorySection');
     const reelList = document.getElementById('notesReelList');
     const storyList = document.getElementById('notesStoryList');
+    const emptyMsg = document.getElementById('notesEmpty');
 
     const reelNotes = NOTES_FOR_LENA.filter(n => n.type === 'הכנת ריל');
     const storyNotes = NOTES_FOR_LENA.filter(n => n.type === 'הכנת סטורי');
@@ -1108,7 +1119,10 @@
 
     reelSection.hidden = reelNotes.length === 0;
     storySection.hidden = storyNotes.length === 0;
-    box.hidden = reelNotes.length === 0 && storyNotes.length === 0;
+
+    const totalEmpty = reelNotes.length === 0 && storyNotes.length === 0;
+    emptyMsg.hidden = !totalEmpty;
+    box.hidden = false;
   }
 
   function renderAll(){
