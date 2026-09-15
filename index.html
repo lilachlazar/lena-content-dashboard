@@ -260,6 +260,18 @@
   }
   .day.today .day-num{ color:var(--coral); }
 
+  .day-holiday{
+    font-size:10px;
+    font-weight:600;
+    color:var(--ink-soft);
+    line-height:1.25;
+    margin-top:-3px;
+    padding:0 2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
   .card{
     border-radius:12px;
     padding:7px 9px;
@@ -579,6 +591,7 @@
 
     .promo-box{ flex-direction:column; align-items:flex-start; padding:12px 14px; }
     .notes-box{ padding:16px 16px; margin-top:16px; }
+    .day-holiday{ font-size:8.5px; }
 
     .hero{ height:180px; border-radius:16px; }
     .hero-text{ padding:14px 16px 16px; }
@@ -976,6 +989,38 @@
     return d.getDate() + ' ב' + MONTHS_HE[d.getMonth()] + ' ' + d.getFullYear();
   }
 
+  /* ---------- חגים ומועדים ----------
+     מבוסס על היכולת המובנית בדפדפן (Intl עם לוח שנה עברי) — בלי ספרייה
+     חיצונית ובלי API — כך שהתאריכים מתעדכנים נכון אוטומטית בכל שנה,
+     כולל שנים מעוברות (אדר א׳/אדר ב׳). רשימת חגים מרכזיים בלבד. */
+  const HEBREW_CAL_FMT = new Intl.DateTimeFormat('en-US-u-ca-hebrew', { month:'numeric', day:'numeric' });
+
+  const HOLIDAYS = [
+    { month:'Tishri',   day:1,  emoji:'🍎', name:'ראש השנה' },
+    { month:'Tishri',   day:10, emoji:'✡️', name:'יום כיפור' },
+    { month:'Tishri',   day:15, emoji:'🌿', name:'סוכות' },
+    { month:'Tishri',   day:22, emoji:'📜', name:'שמחת תורה' },
+    { month:'Kislev',   day:25, emoji:'🕎', name:'חנוכה' },
+    { month:'Shevat',   day:15, emoji:'🌳', name:'ט"ו בשבט' },
+    { month:'Adar',     day:14, emoji:'🎭', name:'פורים' },
+    { month:'Adar II',  day:14, emoji:'🎭', name:'פורים' },
+    { month:'Nisan',    day:15, emoji:'🍷', name:'פסח' },
+    { month:'Nisan',    day:27, emoji:'🕯️', name:'יום השואה' },
+    { month:'Iyar',     day:4,  emoji:'🇮🇱', name:'יום הזיכרון' },
+    { month:'Iyar',     day:5,  emoji:'🎉', name:'יום העצמאות' },
+    { month:'Sivan',    day:6,  emoji:'🌾', name:'שבועות' },
+    { month:'Av',       day:9,  emoji:'🕯️', name:'תשעה באב' }
+  ];
+
+  function getHolidayForDate(dateObj){
+    let month, day;
+    HEBREW_CAL_FMT.formatToParts(dateObj).forEach(p=>{
+      if(p.type === 'month') month = p.value;
+      if(p.type === 'day') day = parseInt(p.value, 10);
+    });
+    return HOLIDAYS.find(h => h.month === month && h.day === day) || null;
+  }
+
   function openTodayModal(){
     const items = CONTENT.filter(c => c.date === todayStr);
 
@@ -1092,6 +1137,14 @@
       num.className = 'day-num';
       num.textContent = dayNum;
       cell.appendChild(num);
+
+      const holiday = getHolidayForDate(new Date(viewYear, viewMonth, dayNum));
+      if(holiday){
+        const hEl = document.createElement('div');
+        hEl.className = 'day-holiday';
+        hEl.textContent = holiday.emoji + ' ' + holiday.name;
+        cell.appendChild(hEl);
+      }
 
       CONTENT.filter(c => c.date === dateStr).forEach(item=>{
         cell.appendChild(buildCardEl(item));
