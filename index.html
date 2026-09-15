@@ -288,6 +288,16 @@
     -webkit-line-clamp:2;
     -webkit-box-orient:vertical;
   }
+  .card .content-type{
+    display:block;
+    font-size:10.5px;
+    font-weight:500;
+    opacity:0.85;
+    margin-top:2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
   .card.dragging{ opacity:0.4; }
 
   .notes-box{
@@ -399,6 +409,11 @@
     font-size:13.5px;
     margin:-8px 0 14px;
   }
+  .content-type-line{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    margin:-8px 0 16px;
+  }
   .today-list{
     display:flex;
     flex-direction:column;
@@ -435,6 +450,13 @@
     flex:1;
     font-weight:600;
     font-size:15.5px;
+  }
+  .today-item .item-sub{
+    display:block;
+    font-size:12px;
+    font-weight:500;
+    opacity:0.85;
+    margin-top:2px;
   }
   .modal-title{
     font-family:'Rubik',sans-serif;
@@ -700,6 +722,7 @@
       date: parseSheetDate(row.date),
       type: classifyType(row.task),
       program: program,
+      contentType: (row.task || '').trim(), // ערך גולמי מעמודת "סוג התוכן" בגיליון, לתצוגה בלבד
       title: title,
       link: row.link ? row.link.trim() : null,
       text: row.text ? row.text.trim() : null,
@@ -854,7 +877,8 @@
     el.style.color = color.ink;
     el.draggable = true;
     el.dataset.id = item.id;
-    el.innerHTML = '<span class="tag">'+TYPE_META[item.type].label+'</span><span class="name">'+item.title+'</span>';
+    el.innerHTML = '<span class="tag">'+TYPE_META[item.type].label+'</span><span class="name">'+item.title+'</span>' +
+      (item.contentType ? '<span class="content-type">'+escapeHtml(item.contentType)+'</span>' : '');
     el.addEventListener('dragstart', e=>{
       e.dataTransfer.setData('text/plain', String(item.id));
       el.classList.add('dragging');
@@ -882,6 +906,10 @@
     const color = getCardColor(item);
     let html = '<span class="modal-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + meta.label + '</span>';
     html += '<h3 class="modal-title">' + escapeHtml(item.title) + '</h3>';
+
+    if(item.contentType){
+      html += '<p class="content-type-line">סוג תוכן: ' + escapeHtml(item.contentType) + '</p>';
+    }
 
     if(item.text){
       html += '<div class="modal-section"><h4>תוכן כתוב</h4><p>' + escapeHtml(item.text) + '</p>' +
@@ -1010,7 +1038,9 @@
         const c = getCardColor(item);
         html += '<button type="button" class="today-item" data-id="' + item.id + '" style="background:' + c.bg + ';color:' + c.ink + '">' +
                   '<span class="tag">' + formatShortDate(item.date) + ' · ' + meta.label + '</span>' +
-                  '<span class="name">' + escapeHtml(item.title) + '</span>' +
+                  '<span class="name">' + escapeHtml(item.title) +
+                    (item.contentType ? '<span class="item-sub">' + escapeHtml(item.contentType) + '</span>' : '') +
+                  '</span>' +
                 '</button>';
       });
       html += '</div>';
@@ -1111,8 +1141,9 @@
     const storyList = document.getElementById('notesStoryList');
     const emptyMsg = document.getElementById('notesEmpty');
 
-    const reelNotes = NOTES_FOR_LENA.filter(n => n.type === 'הכנת ריל');
-    const storyNotes = NOTES_FOR_LENA.filter(n => n.type === 'הכנת סטורי');
+    // התאמה גמישה (לא רק "הכנת ריל"/"הכנת סטורי" מדויק) כדי לתפוס גם ניסוחים כמו "ריל" או "סטורי" בעמודת "סוג"
+    const reelNotes = NOTES_FOR_LENA.filter(n => n.type.includes('ריל'));
+    const storyNotes = NOTES_FOR_LENA.filter(n => n.type.includes('סטור'));
 
     reelList.innerHTML = reelNotes.map(n => '<li>' + escapeHtml(n.note) + '</li>').join('');
     storyList.innerHTML = storyNotes.map(n => '<li>' + escapeHtml(n.note) + '</li>').join('');
