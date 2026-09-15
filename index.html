@@ -1142,7 +1142,7 @@
     const emptyMsg = document.getElementById('notesEmpty');
 
     // התאמה גמישה (לא רק "הכנת ריל"/"הכנת סטורי" מדויק) כדי לתפוס גם ניסוחים כמו "ריל" או "סטורי" בעמודת "סוג"
-    const reelNotes = NOTES_FOR_LENA.filter(n => n.type.includes('ריל'));
+    const reelNotes = NOTES_FOR_LENA.filter(n => n.type.includes('ריל') || n.type.includes('רייל'));
     const storyNotes = NOTES_FOR_LENA.filter(n => n.type.includes('סטור'));
 
     reelList.innerHTML = reelNotes.map(n => '<li>' + escapeHtml(n.note) + '</li>').join('');
