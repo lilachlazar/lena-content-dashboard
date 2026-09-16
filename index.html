@@ -739,7 +739,8 @@
       title: title,
       link: row.link ? row.link.trim() : null,
       text: row.text ? row.text.trim() : null,
-      notes: row.notes ? row.notes.trim() : null
+      notes: row.notes ? row.notes.trim() : null,
+      manychat: row.manychat ? row.manychat.trim() : null
     };
   }
 
@@ -914,6 +915,29 @@
     return d.innerHTML;
   }
 
+  function wireCopyButton(btnId, confirmId, text){
+    const btn = document.getElementById(btnId);
+    if(!btn || !text) return;
+    btn.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(text);
+      }catch(err){
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      const confirmEl = document.getElementById(confirmId);
+      confirmEl.classList.add('show');
+      clearTimeout(btn._hideTimer);
+      btn._hideTimer = setTimeout(()=> confirmEl.classList.remove('show'), 1800);
+    });
+  }
+
   function openModal(item){
     const meta = TYPE_META[item.type];
     const color = getCardColor(item);
@@ -928,6 +952,12 @@
       html += '<div class="modal-section"><h4>תוכן כתוב</h4><p>' + escapeHtml(item.text) + '</p>' +
         '<button type="button" class="copy-text-btn" id="copyTextBtn">📋 העתקת המלל</button>' +
         '<span class="copy-confirm" id="copyConfirm">✓ המלל הועתק</span>' +
+      '</div>';
+    }
+    if(item.manychat){
+      html += '<div class="modal-section"><h4>💬 מלל ל-ManyChat</h4><p>' + escapeHtml(item.manychat) + '</p>' +
+        '<button type="button" class="copy-text-btn" id="copyManychatBtn">📋 העתקת מלל ל-ManyChat</button>' +
+        '<span class="copy-confirm" id="copyManychatConfirm">✓ המלל ל-ManyChat הועתק</span>' +
       '</div>';
     }
     if(item.notes){
@@ -948,27 +978,8 @@
     document.getElementById('modalBody').innerHTML = html;
     document.getElementById('modalBackdrop').hidden = false;
 
-    const copyBtn = document.getElementById('copyTextBtn');
-    if(copyBtn){
-      copyBtn.addEventListener('click', async ()=>{
-        try{
-          await navigator.clipboard.writeText(item.text);
-        }catch(err){
-          const ta = document.createElement('textarea');
-          ta.value = item.text;
-          ta.style.position = 'fixed';
-          ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand('copy');
-          document.body.removeChild(ta);
-        }
-        const confirmEl = document.getElementById('copyConfirm');
-        confirmEl.classList.add('show');
-        clearTimeout(copyBtn._hideTimer);
-        copyBtn._hideTimer = setTimeout(()=> confirmEl.classList.remove('show'), 1800);
-      });
-    }
+    wireCopyButton('copyTextBtn', 'copyConfirm', item.text);
+    wireCopyButton('copyManychatBtn', 'copyManychatConfirm', item.manychat);
 
     document.getElementById('moveDateBtn').addEventListener('click', ()=>{
       const val = document.getElementById('moveDateInput').value;
