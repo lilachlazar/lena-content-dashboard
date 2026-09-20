@@ -1017,10 +1017,9 @@
   }
 
   function storeAuth(token){
-    try{
-      const payload = decodeJwtPayload(token);
-      localStorage.setItem(AUTH_KEY, JSON.stringify({ token: token, exp: payload.exp, email: payload.email }));
-    }catch(err){}
+    const payload = decodeJwtPayload(token);
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ token: token, exp: payload.exp, email: payload.email }));
+    return payload;
   }
 
   function isAuthValid(auth){
@@ -1038,7 +1037,16 @@
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: (response)=>{
-        storeAuth(response.credential);
+        try{
+          if(!response || !response.credential){
+            showToast('⚠️ לא התקבלה תעודת התחברות מ-Google');
+          } else {
+            const payload = storeAuth(response.credential);
+            showToast('✅ התחברת בהצלחה כ-' + payload.email);
+          }
+        }catch(err){
+          showToast('⚠️ שגיאה בעיבוד ההתחברות: ' + err.message);
+        }
         if(pendingSignInResolve){
           const resolve = pendingSignInResolve;
           pendingSignInResolve = null;
