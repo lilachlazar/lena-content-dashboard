@@ -11,6 +11,29 @@
   .result{ margin-top:24px; padding:16px 18px; border-radius:12px; background:#F3ECDC; font-size:15px; line-height:1.6; white-space:pre-wrap; }
   .result.ok{ background:#E3E8D6; }
   .result.blocked{ background:#F8DCE6; }
+  .copy-btn{
+    display:inline-block;
+    margin-top:14px;
+    border:1.5px solid #B9C7A6;
+    background:#fff;
+    color:#3E4A2A;
+    font-family:sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    padding:8px 14px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .copy-confirm{
+    display:inline-block;
+    margin-inline-start:8px;
+    font-size:13px;
+    font-weight:700;
+    color:#3F7A4E;
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  .copy-confirm.show{ opacity:1; }
 </style>
 </head>
 <body>
@@ -35,7 +58,10 @@
     ).join(''));
   }
 
+  let lastToken = '';
+
   function handleCredentialResponse(response){
+    lastToken = response.credential;
     const payload = JSON.parse(base64UrlDecode(response.credential.split('.')[1]));
     const el = document.getElementById('result');
     el.className = 'result ok';
@@ -45,6 +71,22 @@
       'שם: ' + payload.name + '\n' +
       'האימייל מאומת ע"י Google: ' + payload.email_verified + '\n\n' +
       '(זו רק בדיקה — שום דבר לא נשלח עדיין ל-Sheet או ל-Apps Script)';
+    el.innerHTML += '<br><button type="button" class="copy-btn" id="copyTokenBtn">📋 העתקת התעודה לבדיקה ב-Apps Script</button>' +
+      '<span class="copy-confirm" id="copyTokenConfirm">✓ הועתק</span>';
+    document.getElementById('copyTokenBtn').addEventListener('click', async ()=>{
+      try{ await navigator.clipboard.writeText(lastToken); }
+      catch(err){
+        const ta = document.createElement('textarea');
+        ta.value = lastToken;
+        ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      const c = document.getElementById('copyTokenConfirm');
+      c.classList.add('show');
+      setTimeout(()=> c.classList.remove('show'), 1800);
+    });
   }
 </script>
 </body>
