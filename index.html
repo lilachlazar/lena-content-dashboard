@@ -740,7 +740,8 @@
       link: row.link ? row.link.trim() : null,
       text: row.text ? row.text.trim() : null,
       notes: row.notes ? row.notes.trim() : null,
-      manychat: row.manychat ? row.manychat.trim() : null
+      manychat: row.manychat ? row.manychat.trim() : null,
+      manychatLink: row.manychatLink ? row.manychatLink.trim() : null
     };
   }
 
@@ -954,11 +955,17 @@
         '<span class="copy-confirm" id="copyConfirm">✓ המלל הועתק</span>' +
       '</div>';
     }
-    if(item.manychat){
-      html += '<div class="modal-section"><h4>💬 מלל ל-ManyChat</h4><p>' + escapeHtml(item.manychat) + '</p>' +
-        '<button type="button" class="copy-text-btn" id="copyManychatBtn">📋 העתקת מלל ל-ManyChat</button>' +
-        '<span class="copy-confirm" id="copyManychatConfirm">✓ המלל ל-ManyChat הועתק</span>' +
-      '</div>';
+    if(item.manychat || item.manychatLink){
+      html += '<div class="modal-section"><h4>💬 מלל ל-ManyChat</h4>';
+      if(item.manychat){
+        html += '<p>' + escapeHtml(item.manychat) + '</p>' +
+          '<button type="button" class="copy-text-btn" id="copyManychatBtn">📋 העתקת מלל ל-ManyChat</button>' +
+          '<span class="copy-confirm" id="copyManychatConfirm">✓ המלל ל-ManyChat הועתק</span>';
+      }
+      if(item.manychatLink){
+        html += '<a class="copy-text-btn" href="' + escapeHtml(item.manychatLink) + '" target="_blank" rel="noopener" style="text-decoration:none;">💬 פתיחה ב-ManyChat</a>';
+      }
+      html += '</div>';
     }
     if(item.notes){
       html += '<div class="modal-section"><h4>הערות</h4><p>' + escapeHtml(item.notes) + '</p></div>';
