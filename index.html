@@ -1075,8 +1075,36 @@
     });
   }
 
+  function trySilentReauth(){
+    return new Promise((resolve)=>{
+      if(!initGsiOnce()){ resolve(false); return; }
+      let settled = false;
+      const finish = (ok)=>{
+        if(settled) return;
+        settled = true;
+        pendingSignInResolve = null;
+        resolve(ok);
+      };
+      pendingSignInResolve = finish;
+      try{
+        google.accounts.id.prompt((notification)=>{
+          const skipped = (notification.isNotDisplayed && notification.isNotDisplayed()) ||
+                          (notification.isSkippedMoment && notification.isSkippedMoment());
+          if(skipped) finish(false);
+        });
+      }catch(err){
+        finish(false);
+      }
+      setTimeout(()=> finish(false), 4000); // לא נמתין יותר מדי בשקט - אם אין תשובה, פשוט נבקש התחברות מפורשת
+    });
+  }
+
   async function saveFieldsToSheet(rowId, fields){
-    const auth = getValidAuthOrNull();
+    let auth = getValidAuthOrNull();
+    if(!auth){
+      const refreshed = await trySilentReauth();
+      if(refreshed) auth = getValidAuthOrNull();
+    }
     if(!auth){
       return { success:false, error:'פג תוקף ההתחברות. יש להתחבר מחדש.', needsSignIn:true };
     }
