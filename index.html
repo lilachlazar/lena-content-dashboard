@@ -9,6 +9,7 @@
 <title>לוח התוכן של לנה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700&display=swap">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
     --gold:#E8C020;
@@ -544,47 +545,155 @@
   }
   .modal-drive-btn:hover{ filter:brightness(1.06); }
 
-  .modal-move{
-    margin-top:18px;
-    padding-top:18px;
-    border-top:1px solid var(--line);
+  /* ---------- עריכה מהדשבורד ---------- */
+  .modal-top-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
   }
-  .modal-move h4{
+  .modal-top-row .modal-tag{ margin-bottom:0; }
+  .modal-edit-inline-btn{
+    flex:none;
+    border:1.5px solid var(--line);
+    background:#fff;
+    color:var(--plum);
+    font-family:'Heebo',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    padding:6px 12px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .modal-edit-inline-btn:hover{ background:var(--cream-2); }
+
+  .edit-field{ margin-bottom:16px; }
+  .edit-field label{
+    display:block;
     font-family:'Rubik',sans-serif;
     font-weight:700;
     font-size:13px;
     color:var(--plum);
-    margin:0 0 8px;
+    margin-bottom:6px;
   }
-  .modal-move-row{
-    display:flex;
-    gap:8px;
-  }
-  .modal-move-row input[type="date"]{
-    flex:1;
-    min-width:0;
+  .edit-field input[type="text"],
+  .edit-field input[type="date"],
+  .edit-field textarea{
+    width:100%;
     border:1.5px solid var(--line);
     border-radius:12px;
-    padding:11px 12px;
+    padding:10px 12px;
     font-family:'Heebo',sans-serif;
-    font-size:15px;
+    font-size:14.5px;
     color:var(--ink);
     background:var(--cream);
+    resize:vertical;
   }
-  .modal-move-row button{
-    flex:none;
+  .edit-field textarea{ min-height:100px; line-height:1.5; }
+  .edit-readonly-note{
+    color:var(--ink-soft);
+    font-size:12.5px;
+    margin:-10px 0 16px;
+  }
+
+  .edit-actions{
+    display:flex;
+    gap:10px;
+    margin-top:20px;
+  }
+  .edit-save-btn{
+    flex:1;
     border:none;
-    border-radius:12px;
-    background:var(--gold);
-    color:var(--gold-ink);
+    border-radius:14px;
+    background:var(--coral);
+    color:var(--coral-ink);
     font-family:'Heebo',sans-serif;
     font-weight:700;
-    font-size:15px;
-    padding:0 18px;
+    font-size:15.5px;
+    padding:13px 16px;
     cursor:pointer;
+    box-shadow:var(--shadow-card);
     transition:filter .15s ease;
   }
-  .modal-move-row button:hover{ filter:brightness(1.05); }
+  .edit-save-btn:hover{ filter:brightness(1.06); }
+  .edit-save-btn:disabled{ opacity:0.6; cursor:default; }
+  .edit-cancel-btn{
+    flex:none;
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    background:#fff;
+    color:var(--ink);
+    font-family:'Heebo',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    padding:13px 18px;
+    cursor:pointer;
+  }
+  .edit-status{
+    margin-top:12px;
+    font-size:13.5px;
+    text-align:center;
+  }
+  .edit-status.saving{ color:var(--ink-soft); }
+  .edit-status.error{ color:#B23B3B; }
+  .edit-status.ok{ color:#3F7A4E; font-weight:700; }
+
+  .signin-box{ margin-top:6px; text-align:center; }
+  .signin-box p{ font-size:13.5px; color:var(--ink-soft); margin:0 0 12px; }
+  .signin-btn-container{ display:flex; justify-content:center; }
+
+  .unsaved-confirm{
+    margin-top:16px;
+    padding:14px 16px;
+    border-radius:14px;
+    background:#FDEDEC;
+  }
+  .unsaved-confirm p{ margin:0 0 12px; font-size:14px; color:var(--ink); }
+  .unsaved-confirm-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .unsaved-stay-btn{
+    flex:1;
+    border:none;
+    border-radius:12px;
+    background:var(--plum);
+    color:#fff;
+    font-family:'Heebo',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:10px;
+    cursor:pointer;
+  }
+  .unsaved-discard-btn{
+    flex:none;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    background:#fff;
+    color:var(--ink);
+    font-family:'Heebo',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:10px 14px;
+    cursor:pointer;
+  }
+
+  .toast{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:#fff;
+    padding:12px 20px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:600;
+    box-shadow:0 8px 24px rgba(0,0,0,0.25);
+    z-index:200;
+    max-width:90%;
+    text-align:center;
+  }
+  .toast[hidden]{ display:none; }
 
   @media (max-width:560px){
     .page{ padding:14px 12px 36px; }
@@ -608,8 +717,6 @@
     .card{ padding:9px 10px; }
 
     .modal{ padding:22px 18px 20px; }
-    .modal-move-row{ flex-direction:column; }
-    .modal-move-row button{ padding:12px 18px; width:100%; }
 
     .copy-text-btn{
       display:flex;
@@ -625,6 +732,9 @@
       margin-top:8px;
       text-align:center;
     }
+
+    .edit-actions{ flex-direction:column; }
+    .edit-cancel-btn{ width:100%; }
   }
 </style>
 </head>
@@ -681,6 +791,8 @@
   </div>
 </div>
 
+<div class="toast" id="toast" hidden></div>
+
 <div class="modal-backdrop" id="modalBackdrop" hidden>
   <div class="modal" id="modalPanel" role="dialog" aria-modal="true">
     <button class="modal-close" id="modalClose" aria-label="סגירה">✕</button>
@@ -691,9 +803,8 @@
 <script>
 /* =========================================================
    נתוני תוכן — נקראים חיים מגיליון "כל הפרסומים" בגוגל שיטס,
-   דרך Google Apps Script (Web App, קריאה בלבד).
-   שלב עתידי: לחבר את updateContentDate לכתיבה חזרה לתאריך בגיליון
-   (כרגע היא רק מעדכנת את המסך, ולא כותבת ל-Sheet).
+   דרך Google Apps Script (Web App). קריאה פתוחה לכולן; כתיבה
+   (עריכת שדות / גרירה בלוח) דורשת התחברות עם חשבון Google מורשה.
    ========================================================= */
   const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbybMKduEV_HTYZxcH7yx2WDvHmmRposr1bzasVpXks2wOKh9uEAb8ukTPDX2EwWQptSCg/exec';
 
@@ -732,11 +843,13 @@
     const title = (reelName && reelName.length <= 25) ? reelName : (program || reelName || 'ללא שם');
     return {
       id: idx + 1,
+      rowId: (row.id || '').trim(), // מזהה קבוע מהגיליון, לשימוש בשמירה בלבד
       date: parseSheetDate(row.date),
       type: classifyType(row.task),
       program: program,
       contentType: (row.task || '').trim(), // ערך גולמי מעמודת "סוג התוכן" בגיליון, לתצוגה בלבד
       title: title,
+      reelName: reelName, // הערך הגולמי של "שם הריל", לשימוש בעריכה (בנפרד מ-title המחושב)
       link: row.link ? row.link.trim() : null,
       text: row.text ? row.text.trim() : null,
       notes: row.notes ? row.notes.trim() : null,
@@ -875,13 +988,128 @@
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
 
-  function updateContentDate(id, newDate){
-    const item = CONTENT.find(c => c.id === id);
-    if(!item) return;
-    item.date = newDate; // newDate === null => "מחכים לשיבוץ"
-    // TODO (שלב הבא): לקרוא כאן לפונקציית כתיבה ל-Google Sheets
-    // שתעדכן את עמודת "תאריך" עבור השורה המתאימה בגיליון "כל הפרסומים".
+  /* ---------- התחברות עם Google + שמירה ל-Sheet ----------
+     צפייה בדשבורד תמיד נשארת פתוחה לכולן, בלי התחברות.
+     רק לחיצה על "עריכה" דורשת התחברות עם חשבון Google מורשה.
+     הבדיקה האמיתית מי מורשית לכתוב מתבצעת בצד השרת (Apps Script),
+     לא כאן — כאן רק שומרים את התעודה שהתקבלה מ-Google. */
+  const GOOGLE_CLIENT_ID = '342989226010-e6gemm99ddjrpf4lfn83qu6n4o5jea4t.apps.googleusercontent.com';
+  const AUTH_KEY = 'lenaDashboardAuth_v1';
+  let gsiInitialized = false;
+  let pendingSignInResolve = null;
+
+  function decodeJwtPayload(token){
+    const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    const json = decodeURIComponent(atob(b64).split('').map(c=>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
+    return JSON.parse(json);
+  }
+
+  function getStoredAuth(){
+    try{
+      const raw = localStorage.getItem(AUTH_KEY);
+      if(!raw) return null;
+      const parsed = JSON.parse(raw);
+      if(!parsed || !parsed.token || !parsed.exp) return null;
+      return parsed;
+    }catch(err){ return null; }
+  }
+
+  function storeAuth(token){
+    try{
+      const payload = decodeJwtPayload(token);
+      localStorage.setItem(AUTH_KEY, JSON.stringify({ token: token, exp: payload.exp, email: payload.email }));
+    }catch(err){}
+  }
+
+  function isAuthValid(auth){
+    return !!auth && (auth.exp * 1000) > (Date.now() + 60000); // עוד לפחות דקה בתוקף
+  }
+
+  function getValidAuthOrNull(){
+    const auth = getStoredAuth();
+    return isAuthValid(auth) ? auth : null;
+  }
+
+  function initGsiOnce(){
+    if(gsiInitialized) return true;
+    if(!window.google || !google.accounts || !google.accounts.id) return false;
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (response)=>{
+        storeAuth(response.credential);
+        if(pendingSignInResolve){
+          const resolve = pendingSignInResolve;
+          pendingSignInResolve = null;
+          resolve(true);
+        }
+      }
+    });
+    gsiInitialized = true;
+    return true;
+  }
+
+  function requestSignIn(containerEl){
+    return new Promise((resolve)=>{
+      const tryRender = ()=>{
+        pendingSignInResolve = resolve;
+        google.accounts.id.renderButton(containerEl, { type:'standard', text:'signin' });
+      };
+      if(initGsiOnce()){
+        tryRender();
+      } else {
+        setTimeout(()=>{
+          if(initGsiOnce()) tryRender();
+          else resolve(false);
+        }, 500);
+      }
+    });
+  }
+
+  async function saveFieldsToSheet(rowId, fields){
+    const auth = getValidAuthOrNull();
+    if(!auth){
+      return { success:false, error:'פג תוקף ההתחברות. יש להתחבר מחדש.', needsSignIn:true };
+    }
+    try{
+      const res = await fetch(SHEET_API_URL, {
+        method:'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ idToken: auth.token, rowId: rowId, fields: fields })
+      });
+      return await res.json();
+    }catch(err){
+      return { success:false, error:'שגיאת רשת — לא הצלחנו להתחבר לגיליון' };
+    }
+  }
+
+  function showToast(msg){
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.hidden = false;
+    clearTimeout(el._timer);
+    el._timer = setTimeout(()=> { el.hidden = true; }, 3500);
+  }
+
+  function moveCardToDate(item, newDateStr){
+    if(item.date === newDateStr) return;
+    const auth = getValidAuthOrNull();
+    if(!auth){
+      showToast('כדי לגרור תוכן לתאריך אחר צריך קודם להתחבר דרך ✏️ עריכה');
+      return;
+    }
+    const originalDate = item.date;
+    item.date = newDateStr; // עדכון מיידי על המסך
     renderAll();
+
+    saveFieldsToSheet(item.rowId, { date: newDateStr }).then(response=>{
+      if(!response.success){
+        item.date = originalDate; // חוזרים למקום המקורי אם השמירה נכשלה
+        renderAll();
+        showToast('⚠️ השינוי לא נשמר: ' + (response.error || 'שגיאה, נסו שוב'));
+      }
+    });
   }
 
   function buildCardEl(item){
@@ -916,6 +1144,10 @@
     return d.innerHTML;
   }
 
+  function escapeAttr(str){
+    return escapeHtml(str).replace(/"/g, '&quot;');
+  }
+
   function wireCopyButton(btnId, confirmId, text){
     const btn = document.getElementById(btnId);
     if(!btn || !text) return;
@@ -939,10 +1171,24 @@
     });
   }
 
+  /* ---------- חלון הפרטים: תצוגה + עריכה ----------
+     MODAL_STATE עוקב אחרי מה פתוח כרגע כדי לדעת אם יש שינויים
+     שלא נשמרו (editing + dirty) לפני שסוגרים את החלון. */
+  let MODAL_STATE = { item:null, editing:false, dirty:false, original:null };
+
   function openModal(item){
+    MODAL_STATE = { item:item, editing:false, dirty:false, original:null };
+    renderModalReadView(item);
+    document.getElementById('modalBackdrop').hidden = false;
+  }
+
+  function renderModalReadView(item){
     const meta = TYPE_META[item.type];
     const color = getCardColor(item);
-    let html = '<span class="modal-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + meta.label + '</span>';
+    let html = '<div class="modal-top-row">' +
+      '<span class="modal-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + meta.label + '</span>' +
+      '<button type="button" class="modal-edit-inline-btn" id="modalEditBtn">✏️ עריכה</button>' +
+    '</div>';
     html += '<h3 class="modal-title">' + escapeHtml(item.title) + '</h3>';
 
     if(item.contentType){
@@ -974,33 +1220,178 @@
       html += '<a class="modal-drive-btn" href="' + item.link + '" target="_blank" rel="noopener">🔗 פתיחת החומר ב-Drive</a>';
     }
 
-    html += '<div class="modal-move">' +
-      '<h4>העברה לתאריך אחר</h4>' +
-      '<div class="modal-move-row">' +
-        '<input type="date" id="moveDateInput" value="' + (item.date || '') + '">' +
-        '<button type="button" id="moveDateBtn">העברה</button>' +
-      '</div>' +
-    '</div>';
-
     document.getElementById('modalBody').innerHTML = html;
-    document.getElementById('modalBackdrop').hidden = false;
 
     wireCopyButton('copyTextBtn', 'copyConfirm', item.text);
     wireCopyButton('copyManychatBtn', 'copyManychatConfirm', item.manychat);
 
-    document.getElementById('moveDateBtn').addEventListener('click', ()=>{
-      const val = document.getElementById('moveDateInput').value;
-      if(!val) return;
-      const parts = val.split('-').map(Number);
-      viewYear = parts[0];
-      viewMonth = parts[1] - 1;
-      updateContentDate(item.id, val); // מעדכן רק את התצוגה; לא כותב ל-Google Sheets
+    document.getElementById('modalEditBtn').addEventListener('click', ()=> enterEditMode(item));
+  }
+
+  function enterEditMode(item){
+    MODAL_STATE.editing = true;
+    MODAL_STATE.dirty = false;
+
+    const auth = getValidAuthOrNull();
+    if(auth){
+      renderEditForm(item);
+      return;
+    }
+
+    const meta = TYPE_META[item.type];
+    const color = getCardColor(item);
+    let html = '<span class="modal-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + meta.label + '</span>';
+    html += '<h3 class="modal-title">' + escapeHtml(item.title) + '</h3>';
+    html += '<div class="signin-box"><p>כדי לערוך, יש להתחבר עם חשבון Google מורשה:</p>' +
+      '<div class="signin-btn-container" id="signinBtnContainer"></div></div>';
+    document.getElementById('modalBody').innerHTML = html;
+
+    requestSignIn(document.getElementById('signinBtnContainer')).then(ok=>{
+      if(ok && MODAL_STATE.item === item && MODAL_STATE.editing){
+        renderEditForm(item);
+      }
+    });
+  }
+
+  function renderEditForm(item){
+    const meta = TYPE_META[item.type];
+    const color = getCardColor(item);
+
+    const original = {
+      reelName: item.reelName || '',
+      text: item.text || '',
+      manychat: item.manychat || '',
+      link: item.link || '',
+      manychatLink: item.manychatLink || '',
+      date: item.date || ''
+    };
+    MODAL_STATE.original = original;
+
+    let html = '<span class="modal-tag" style="background:' + color.bg + ';color:' + color.ink + '">' + meta.label + ' · עריכה</span>';
+
+    html += '<div class="edit-field"><label>שם הריל</label><input type="text" id="editReelName" value="' + escapeAttr(original.reelName) + '"></div>';
+
+    if(item.contentType){
+      html += '<p class="edit-readonly-note">סוג תוכן: ' + escapeHtml(item.contentType) + ' (לא ניתן לעריכה מהדשבורד)</p>';
+    }
+
+    html += '<div class="edit-field"><label>תוכן כתוב</label><textarea id="editText">' + escapeHtml(original.text) + '</textarea></div>';
+    html += '<div class="edit-field"><label>מלל ל-ManyChat</label><textarea id="editManychat">' + escapeHtml(original.manychat) + '</textarea></div>';
+    html += '<div class="edit-field"><label>לינק לתוכן (Drive)</label><input type="text" id="editLink" value="' + escapeAttr(original.link) + '"></div>';
+    html += '<div class="edit-field"><label>קישור ManyChat</label><input type="text" id="editManychatLink" value="' + escapeAttr(original.manychatLink) + '"></div>';
+    html += '<div class="edit-field"><label>תאריך</label><input type="date" id="editDate" value="' + escapeAttr(original.date) + '"></div>';
+
+    if(item.notes){
+      html += '<div class="modal-section"><h4>הערות (לא ניתנות לעריכה מהדשבורד)</h4><p>' + escapeHtml(item.notes) + '</p></div>';
+    }
+
+    html += '<div class="edit-actions">' +
+      '<button type="button" class="edit-save-btn" id="editSaveBtn">💾 שמירה</button>' +
+      '<button type="button" class="edit-cancel-btn" id="editCancelBtn">ביטול</button>' +
+    '</div>';
+    html += '<div class="edit-status" id="editStatus"></div>';
+
+    document.getElementById('modalBody').innerHTML = html;
+
+    ['editReelName','editText','editManychat','editLink','editManychatLink','editDate'].forEach(id=>{
+      document.getElementById(id).addEventListener('input', ()=>{ MODAL_STATE.dirty = true; });
+    });
+
+    document.getElementById('editCancelBtn').addEventListener('click', ()=>{
+      MODAL_STATE.editing = false;
+      MODAL_STATE.dirty = false;
+      renderModalReadView(item);
+    });
+
+    document.getElementById('editSaveBtn').addEventListener('click', ()=> saveEditedFields(item));
+  }
+
+  async function saveEditedFields(item){
+    const original = MODAL_STATE.original;
+    const draft = {
+      reelName: document.getElementById('editReelName').value.trim(),
+      text: document.getElementById('editText').value.trim(),
+      manychat: document.getElementById('editManychat').value.trim(),
+      link: document.getElementById('editLink').value.trim(),
+      manychatLink: document.getElementById('editManychatLink').value.trim(),
+      date: document.getElementById('editDate').value
+    };
+
+    const changed = {};
+    Object.keys(draft).forEach(key=>{
+      if(draft[key] !== original[key]) changed[key] = draft[key];
+    });
+
+    if(Object.keys(changed).length === 0){
+      MODAL_STATE.editing = false;
+      MODAL_STATE.dirty = false;
+      renderModalReadView(item);
+      return;
+    }
+
+    const statusEl = document.getElementById('editStatus');
+    const saveBtn = document.getElementById('editSaveBtn');
+    saveBtn.disabled = true;
+    statusEl.className = 'edit-status saving';
+    statusEl.textContent = 'שומרת...';
+
+    const response = await saveFieldsToSheet(item.rowId, changed);
+
+    if(response.success){
+      if('reelName' in changed) item.reelName = changed.reelName;
+      if('text' in changed) item.text = changed.text || null;
+      if('manychat' in changed) item.manychat = changed.manychat || null;
+      if('link' in changed) item.link = changed.link || null;
+      if('manychatLink' in changed) item.manychatLink = changed.manychatLink || null;
+      if('date' in changed) item.date = changed.date;
+      item.title = (item.reelName && item.reelName.length <= 25) ? item.reelName : (item.program || item.reelName || 'ללא שם');
+
+      MODAL_STATE.editing = false;
+      MODAL_STATE.dirty = false;
+      statusEl.className = 'edit-status ok';
+      statusEl.textContent = '✓ נשמר בהצלחה';
+      renderAll();
+      setTimeout(()=>{
+        if(!document.getElementById('modalBackdrop').hidden && MODAL_STATE.item === item){
+          renderModalReadView(item);
+        }
+      }, 900);
+    } else {
+      saveBtn.disabled = false;
+      statusEl.className = 'edit-status error';
+      statusEl.textContent = '⚠️ ' + (response.error || 'השמירה נכשלה, נסו שוב');
+    }
+  }
+
+  function showUnsavedConfirm(){
+    if(document.getElementById('unsavedConfirmBox')) return;
+    const box = document.createElement('div');
+    box.className = 'unsaved-confirm';
+    box.id = 'unsavedConfirmBox';
+    box.innerHTML = '<p>יש שינויים שלא נשמרו. לצאת בלי לשמור?</p>' +
+      '<div class="unsaved-confirm-actions">' +
+        '<button type="button" class="unsaved-stay-btn" id="unsavedStayBtn">להישאר ולהמשיך לערוך</button>' +
+        '<button type="button" class="unsaved-discard-btn" id="unsavedDiscardBtn">לצאת בלי לשמור</button>' +
+      '</div>';
+    document.getElementById('modalBody').appendChild(box);
+    document.getElementById('unsavedStayBtn').addEventListener('click', ()=> box.remove());
+    document.getElementById('unsavedDiscardBtn').addEventListener('click', ()=>{
+      MODAL_STATE.dirty = false;
       closeModal();
     });
   }
 
+  function attemptCloseModal(){
+    if(MODAL_STATE.editing && MODAL_STATE.dirty){
+      showUnsavedConfirm();
+      return;
+    }
+    closeModal();
+  }
+
   function closeModal(){
     document.getElementById('modalBackdrop').hidden = true;
+    MODAL_STATE = { item:null, editing:false, dirty:false, original:null };
   }
 
   function formatHebrewDate(d){
@@ -1040,6 +1431,7 @@
   }
 
   function openTodayModal(){
+    MODAL_STATE = { item:null, editing:false, dirty:false, original:null };
     const items = CONTENT.filter(c => c.date === todayStr);
 
     let html = '<span class="modal-tag today-badge">היום</span>';
@@ -1077,6 +1469,7 @@
   }
 
   function openCategoryModal(program){
+    MODAL_STATE = { item:null, editing:false, dirty:false, original:null };
     const family = PROGRAM_COLORS[program];
     const color = family ? family.reel : NEUTRAL_COLOR;
 
@@ -1120,12 +1513,12 @@
     });
   }
 
-  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalClose').addEventListener('click', attemptCloseModal);
   document.getElementById('modalBackdrop').addEventListener('click', e=>{
-    if(e.target.id === 'modalBackdrop') closeModal();
+    if(e.target.id === 'modalBackdrop') attemptCloseModal();
   });
   document.addEventListener('keydown', e=>{
-    if(e.key === 'Escape') closeModal();
+    if(e.key === 'Escape') attemptCloseModal();
   });
 
   function renderCalendar(){
@@ -1174,7 +1567,8 @@
         e.preventDefault();
         cell.classList.remove('drag-over');
         const id = Number(e.dataTransfer.getData('text/plain'));
-        updateContentDate(id, dateStr);
+        const item = CONTENT.find(c => c.id === id);
+        if(item) moveCardToDate(item, dateStr);
       });
 
       grid.appendChild(cell);
