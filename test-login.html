@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בדיקת התחברות — לא חלק מהדשבורד</title>
+<style>
+  body{ font-family:sans-serif; direction:rtl; max-width:520px; margin:60px auto; padding:0 20px; color:#2E2A24; }
+  h1{ font-size:20px; }
+  .note{ color:#7A7266; font-size:14px; margin-bottom:24px; }
+  .result{ margin-top:24px; padding:16px 18px; border-radius:12px; background:#F3ECDC; font-size:15px; line-height:1.6; white-space:pre-wrap; }
+  .result.ok{ background:#E3E8D6; }
+  .result.blocked{ background:#F8DCE6; }
+</style>
+</head>
+<body>
+  <h1>🧪 עמוד בדיקת התחברות בלבד</h1>
+  <p class="note">זה לא הדשבורד האמיתי ולא נוגע בו. המטרה היחידה: לבדוק שההתחברות עם Google עובדת נכון, לפני שממשיכים לבנות משהו.</p>
+
+  <div id="g_id_onload"
+       data-client_id="342989226010-e6gemm99ddjrpf4lfn83qu6n4o5jea4t.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse">
+  </div>
+  <div class="g_id_signin" data-type="standard" data-locale="he"></div>
+
+  <div id="result"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  function base64UrlDecode(str){
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while(str.length % 4) str += '=';
+    return decodeURIComponent(atob(str).split('').map(c=>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
+  }
+
+  function handleCredentialResponse(response){
+    const payload = JSON.parse(base64UrlDecode(response.credential.split('.')[1]));
+    const el = document.getElementById('result');
+    el.className = 'result ok';
+    el.textContent =
+      '✅ ההתחברות הצליחה!\n\n' +
+      'אימייל: ' + payload.email + '\n' +
+      'שם: ' + payload.name + '\n' +
+      'האימייל מאומת ע"י Google: ' + payload.email_verified + '\n\n' +
+      '(זו רק בדיקה — שום דבר לא נשלח עדיין ל-Sheet או ל-Apps Script)';
+  }
+</script>
+</body>
+</html>
