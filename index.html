@@ -1061,6 +1061,7 @@
   function requestSignIn(containerEl){
     return new Promise((resolve)=>{
       const tryRender = ()=>{
+        try{ google.accounts.id.disableAutoSelect(); }catch(err){} // מונע שימוש חוזר באישור ישן/שמור
         pendingSignInResolve = resolve;
         google.accounts.id.renderButton(containerEl, { type:'standard', text:'signin' });
       };
