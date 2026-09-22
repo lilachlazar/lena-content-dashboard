@@ -313,6 +313,54 @@
   }
   .card.dragging{ opacity:0.4; }
 
+  .waiting-box{
+    background:#fff;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:16px 18px;
+    margin-top:16px;
+  }
+  .waiting-title{
+    font-family:'Rubik',sans-serif;
+    font-weight:800;
+    font-size:16.5px;
+    color:var(--plum);
+    margin:0 0 4px;
+  }
+  .waiting-hint{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+  }
+  .waiting-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    border:2px dashed transparent;
+    border-radius:14px;
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .waiting-scroll.drag-over{
+    background:#FDEDEC;
+    border-color:var(--coral);
+  }
+  .waiting-list{
+    display:flex;
+    gap:10px;
+    min-height:56px;
+    padding:2px;
+  }
+  .waiting-list .card{
+    flex:0 0 auto;
+    width:170px;
+  }
+  .waiting-empty{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13.5px;
+    margin:4px 0 0;
+  }
+  .waiting-empty[hidden]{ display:none; }
+
   .notes-box{
     background:#fff;
     border-radius:var(--radius);
@@ -700,6 +748,8 @@
 
     .promo-box{ flex-direction:column; align-items:flex-start; padding:12px 14px; }
     .notes-box{ padding:16px 16px; margin-top:16px; }
+    .waiting-box{ padding:14px 14px; }
+    .waiting-list .card{ width:150px; }
     .day-holiday{ font-size:8.5px; }
 
     .hero{ height:180px; border-radius:16px; }
@@ -773,6 +823,15 @@
           </div>
           <div class="grid" id="grid"></div>
         </div>
+      </div>
+
+      <div class="waiting-box" id="waitingBox">
+        <h2 class="waiting-title">⏳ ממתינים לשיבוץ</h2>
+        <p class="waiting-hint">גררו לכאן כרטיס מהלוח כדי להוציא אותו מתאריך, וגררו בחזרה ליום כדי לשבץ מחדש</p>
+        <div class="waiting-scroll" id="waitingScroll">
+          <div class="waiting-list" id="waitingList"></div>
+        </div>
+        <p class="waiting-empty" id="waitingEmpty" hidden>אין כרגע תוכן ממתין לשיבוץ</p>
       </div>
     </div>
   </div>
@@ -1133,14 +1192,14 @@
     if(item.date === newDateStr) return;
     const auth = getValidAuthOrNull();
     if(!auth){
-      showToast('כדי לגרור תוכן לתאריך אחר צריך קודם להתחבר דרך ✏️ עריכה');
+      showToast('כדי לגרור תוכן צריך קודם להתחבר דרך ✏️ עריכה');
       return;
     }
     const originalDate = item.date;
-    item.date = newDateStr; // עדכון מיידי על המסך
+    item.date = newDateStr; // עדכון מיידי על המסך (newDateStr === null => מוציאים מהלוח)
     renderAll();
 
-    saveFieldsToSheet(item.rowId, { date: newDateStr }).then(response=>{
+    saveFieldsToSheet(item.rowId, { date: newDateStr || '' }).then(response=>{
       if(!response.success){
         item.date = originalDate; // חוזרים למקום המקורי אם השמירה נכשלה
         renderAll();
@@ -1558,6 +1617,17 @@
     if(e.key === 'Escape') attemptCloseModal();
   });
 
+  const waitingScrollEl = document.getElementById('waitingScroll');
+  waitingScrollEl.addEventListener('dragover', e=>{ e.preventDefault(); waitingScrollEl.classList.add('drag-over'); });
+  waitingScrollEl.addEventListener('dragleave', ()=> waitingScrollEl.classList.remove('drag-over'));
+  waitingScrollEl.addEventListener('drop', e=>{
+    e.preventDefault();
+    waitingScrollEl.classList.remove('drag-over');
+    const id = Number(e.dataTransfer.getData('text/plain'));
+    const item = CONTENT.find(c => c.id === id);
+    if(item) moveCardToDate(item, null);
+  });
+
   function renderCalendar(){
     document.getElementById('monthLabel').textContent = MONTHS_HE[viewMonth] + ' ' + viewYear;
     const grid = document.getElementById('grid');
@@ -1658,10 +1728,24 @@
     box.hidden = false;
   }
 
+  function renderWaitingArea(){
+    const list = document.getElementById('waitingList');
+    const emptyMsg = document.getElementById('waitingEmpty');
+    list.innerHTML = '';
+
+    const items = CONTENT.filter(c => !c.date);
+    items.forEach(item=>{
+      list.appendChild(buildCardEl(item));
+    });
+
+    emptyMsg.hidden = items.length > 0;
+  }
+
   function renderAll(){
     renderCalendar();
     renderMonthlyPromo();
     renderNotesForLena();
+    renderWaitingArea();
   }
 
   document.getElementById('prevBtn').addEventListener('click', ()=>{
